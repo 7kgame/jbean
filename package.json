@@ -1,0 +1,36 @@
+{
+  "name": "jbean",
+  "version": "0.0.1",
+  "description": "bean factory for jweb",
+  "main": "build/index.js",
+  "typings": "types/index.d.ts",
+  "files": [
+    "build/**/*.js",
+    "types/*.d.ts"
+  ],
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/7kgame/jbean.git"
+  },
+  "keywords": [
+    "bean",
+    "jweb"
+  ],
+  "author": "cyij2006@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/7kgame/jbean/issues"
+  },
+  "homepage": "https://github.com/7kgame/jbean#readme",
+  "devDependencies": {
+    "@types/node": "^10.12.18"
+  },
+  "engines": {
+    "node": ">= 10.0.0",
+    "npm": ">= 6.0.0"
+  }
+}
