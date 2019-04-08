@@ -2,6 +2,34 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const Path = require("path");
+function merge(target, source) {
+    if (!target || typeof target !== 'object') {
+        throw new Error('target value must be an object');
+    }
+    if (!source || typeof source !== 'object') {
+        return target;
+    }
+    if (Array.isArray(source)) {
+        if (Array.isArray(target)) {
+            for (let i = 0; i < source.length; i++) {
+                target.push(source[i]);
+            }
+        }
+    }
+    else {
+        for (let key in source) {
+            const val = source[key];
+            // console.log(key, '-----------', val)
+            if (typeof target[key] === 'undefined' || typeof val !== 'object') {
+                target[key] = val;
+            }
+            else {
+                merge(target[key], val);
+            }
+        }
+    }
+}
+exports.merge = merge;
 function redefineProperty(target, key, config) {
     if (!config) {
         return;
@@ -43,45 +71,3 @@ function getObjectType(obj) {
     return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1].toLowerCase();
 }
 exports.getObjectType = getObjectType;
-var AnnotationType;
-(function (AnnotationType) {
-    AnnotationType[AnnotationType["clz"] = 0] = "clz";
-    AnnotationType[AnnotationType["method"] = 1] = "method";
-    AnnotationType[AnnotationType["field"] = 2] = "field";
-})(AnnotationType = exports.AnnotationType || (exports.AnnotationType = {}));
-let compileTrick;
-function annotationHelper(annoType, callback, args) {
-    switch (annoType) {
-        case AnnotationType.clz:
-            if (args.length === 1 && typeof args[0] === 'function') {
-                callback && callback(...args);
-                return compileTrick;
-            }
-            return target => {
-                callback && callback(target, ...args);
-            };
-        case AnnotationType.method:
-            if (args.length === 3
-                && (typeof args[0] === 'object' || typeof args[0] === 'function')
-                && typeof args[2] === 'object'
-                && typeof args[2].value !== 'undefined') {
-                callback && callback(...args);
-                return compileTrick;
-            }
-            return (target, prop, descriptor) => {
-                callback && callback(target, prop, descriptor, ...args);
-            };
-        case AnnotationType.field:
-            if (args.length >= 2
-                && (typeof args[0] === 'object' || typeof args[0] === 'function')
-                && typeof args[1] === 'string') {
-                callback && callback(...args);
-                return compileTrick;
-            }
-            return (target, prop) => {
-                callback && callback(target, prop, ...args);
-            };
-    }
-    return compileTrick;
-}
-exports.annotationHelper = annotationHelper;

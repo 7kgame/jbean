@@ -20,8 +20,9 @@ let App = App_1 = class App {
         const test = new test_1.default();
         console.log(test.func1());
     }
-    static main() {
+    static main(configs) {
         console.log('app start');
+        console.log(configs);
         let app = new App_1();
         app.func();
     }
@@ -31,11 +32,10 @@ __decorate([
     __metadata("design:type", user_service_1.default)
 ], App.prototype, "userService", void 0);
 __decorate([
-    lib_1.Autowired(),
+    lib_1.Autowired,
     __metadata("design:type", Object)
 ], App, "prop", void 0);
 App = App_1 = __decorate([
-    lib_1.ComponentScan,
     lib_1.JBootApplication
 ], App);
 exports.default = App;

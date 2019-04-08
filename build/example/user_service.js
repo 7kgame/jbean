@@ -8,8 +8,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../lib");
 let UserService = class UserService {
+    constructor() {
+        this.name = 'jack';
+    }
+    postInit() {
+        console.log('user service post init', this.name);
+    }
     getName() {
-        return 'i am user';
+        return 'I\'m ' + this.name;
     }
 };
 UserService = __decorate([

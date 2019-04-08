@@ -1,15 +1,14 @@
-import { Autowired, ComponentScan, JBootApplication } from '../lib'
+import { Autowired, JBootApplication } from '../lib'
 import UserService from './user_service'
 import Test from './test/test'
 
-@ComponentScan
 @JBootApplication
 export default class App {
 
   @Autowired
   private userService: UserService;
 
-  @Autowired()
+  @Autowired
   private static prop;
 
   public func () {
@@ -19,8 +18,9 @@ export default class App {
     console.log(test.func1())
   }
 
-  public static main () {
+  public static main (configs) {
     console.log('app start')
+    console.log(configs)
     let app = new App()
     app.func()
   }

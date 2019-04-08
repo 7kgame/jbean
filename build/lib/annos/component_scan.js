@@ -2,8 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Path = require("path");
 const utils_1 = require("../utils");
+const helper_1 = require("./helper");
 const bean_factory_1 = require("../bean_factory");
-const scan = function (ctor, options, ext) {
+const ouertScanner = [];
+exports.registerScanner = function (scanner) {
+    ouertScanner.push(scanner);
+};
+exports.scan = function (ctor, options, ext) {
     options = options || '';
     ext = ext || 'js';
     ext = '.' + ext;
@@ -23,25 +28,28 @@ const scan = function (ctor, options, ext) {
     // console.log(excludes)
     includes.forEach(dir => {
         utils_1.readDirSync(dir, (fpath, isFile) => {
-            if (fpath.endsWith(ext)) {
-                let isExclude = false;
-                excludes.every((item, index, arr) => {
-                    if (fpath.indexOf(item) === 0) {
-                        isExclude = true;
-                        return false;
-                    }
-                    return true;
-                });
-                if (!isExclude) {
-                    bean_factory_1.default.setCurrentSourceFile(fpath);
-                    require(fpath);
-                    bean_factory_1.default.setCurrentSourceFile(null);
+            let isExclude = false;
+            excludes.every((item, index, arr) => {
+                if (fpath.indexOf(item) === 0) {
+                    isExclude = true;
+                    return false;
                 }
+                return true;
+            });
+            if (isFile && !isExclude && fpath.endsWith(ext)) {
+                bean_factory_1.default.setCurrentSourceFile(fpath);
+                // console.log(fpath)
+                require(fpath);
+                // console.log('end======')
+                bean_factory_1.default.setCurrentSourceFile(null);
             }
+            ouertScanner.forEach(scanner => {
+                scanner(fpath, isExclude, isFile);
+            });
         });
     });
 };
 function ComponentScan(options, ext) {
-    return utils_1.annotationHelper(utils_1.AnnotationType.clz, scan, arguments);
+    return helper_1.annotationHelper(helper_1.AnnotationType.clz, exports.scan, arguments);
 }
 exports.default = ComponentScan;

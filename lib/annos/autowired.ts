@@ -1,9 +1,10 @@
-import { AnnotationType, annotationHelper, redefineProperty } from '../utils'
+import { redefineProperty } from '../utils'
+import { AnnotationType, annotationHelper } from './helper'
 import BeanFactory from '../bean_factory'
 
-const callback = function (target: Function | object, prop: string, name?: string) {
-  name = name || prop
-  redefineProperty(target, prop, {
+const callback = function (target: Function | object, field: string, name?: string) {
+  name = name || field
+  redefineProperty(target, field, {
     get: function () {
       return BeanFactory.getBean(name)
     }

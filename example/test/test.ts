@@ -1,4 +1,4 @@
-import { Autowired, ComponentScan, JBootApplication } from '../../lib'
+import { Autowired, ComponentScan, JBootApplication, Bean } from '../../lib'
 import UserService from '../user_service'
 
 export default class Test1 {

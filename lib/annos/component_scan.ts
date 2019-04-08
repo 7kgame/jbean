@@ -1,8 +1,15 @@
 import * as Path from 'path'
-import { AnnotationType, annotationHelper, readDirSync } from '../utils'
+import { readDirSync } from '../utils'
+import { AnnotationType, annotationHelper } from './helper'
 import BeanFactory from '../bean_factory'
 
-const scan = function (ctor: Function, options?: string | object, ext?: string) {
+const ouertScanner: Function[] = []
+
+export const registerScanner = function (scanner: Function) {
+  ouertScanner.push(scanner)
+}
+
+export const scan = function (ctor: Function, options?: string | object, ext?: string) {
   options = options || ''
   ext = ext || 'js'
   ext = '.' + ext
@@ -23,21 +30,24 @@ const scan = function (ctor: Function, options?: string | object, ext?: string) 
   // console.log(excludes)
   includes.forEach( dir => {
     readDirSync(dir, (fpath: string, isFile: boolean) => {
-      if (fpath.endsWith(ext)) {
-        let isExclude = false
-        excludes.every((item, index, arr) => {
-          if (fpath.indexOf(item) === 0) {
-            isExclude = true
-            return false
-          }
-          return true
-        })
-        if (!isExclude) {
-          BeanFactory.setCurrentSourceFile(fpath)
-          require(fpath)
-          BeanFactory.setCurrentSourceFile(null)
+      let isExclude = false
+      excludes.every((item, index, arr) => {
+        if (fpath.indexOf(item) === 0) {
+          isExclude = true
+          return false
         }
+        return true
+      })
+      if (isFile && !isExclude && fpath.endsWith(ext)) {
+        BeanFactory.setCurrentSourceFile(fpath)
+        // console.log(fpath)
+        require(fpath)
+        // console.log('end======')
+        BeanFactory.setCurrentSourceFile(null)
       }
+      ouertScanner.forEach(scanner => {
+        scanner(fpath, isExclude, isFile)
+      })
     })
   })
 }

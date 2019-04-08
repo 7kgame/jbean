@@ -1,6 +1,32 @@
 import * as fs from 'fs'
 import * as Path from 'path'
 
+export function merge (target, source) {
+  if (!target || typeof target !== 'object') {
+    throw new Error('target value must be an object')
+  }
+  if (!source  || typeof source !== 'object') {
+    return target
+  }
+  if (Array.isArray(source)) {
+    if (Array.isArray(target)) {
+      for (let i=0; i<source.length; i++) {
+        target.push(source[i]);
+      }
+    }
+  } else {
+    for (let key in source) {
+      const val = source[key]
+      // console.log(key, '-----------', val)
+      if (typeof target[key] === 'undefined' || typeof val !== 'object') {
+        target[key] = val
+      } else {
+        merge(target[key], val)
+      }
+    }
+  }
+}
+
 export function redefineProperty (target, key, config) {
   if (!config) {
     return
@@ -40,47 +66,4 @@ export function getObjectType(obj) {
     return 'undefined'
   }
   return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1].toLowerCase()
-}
-
-export enum AnnotationType {
-  clz,
-  method,
-  field
-}
-
-let compileTrick: any
-
-export function annotationHelper (annoType: AnnotationType, callback: Function, args) {
-  switch (annoType) {
-    case AnnotationType.clz:
-      if (args.length === 1 && typeof args[0] === 'function') {
-        callback && callback(...args)
-        return compileTrick
-      }
-      return target => {
-        callback && callback(target, ...args)
-      }
-    case AnnotationType.method:
-      if (args.length === 3 
-          && (typeof args[0] === 'object' || typeof args[0] === 'function')
-          && typeof args[2] === 'object'
-          && typeof args[2].value !== 'undefined') {
-        callback && callback(...args)
-        return compileTrick
-      }
-      return (target: any, prop: string, descriptor: PropertyDescriptor) => {
-        callback && callback(target, prop, descriptor, ...args)
-      }
-    case AnnotationType.field:
-      if (args.length >= 2 
-          && (typeof args[0] === 'object' || typeof args[0] === 'function')
-          && typeof args[1] === 'string') {
-        callback && callback(...args)
-        return compileTrick
-      }
-      return (target: any, prop: string) => {
-        callback && callback(target, prop, ...args)
-      }
-  }
-  return compileTrick
 }

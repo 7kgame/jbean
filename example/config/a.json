@@ -1,0 +1,10 @@
+{
+	"node-web": {
+		"data": {
+			"mongo": {
+				"bean": "primary",
+				"url": "mongodb://localhost:27017"
+			}
+		}
+	}
+}
