@@ -5,6 +5,8 @@ import { merge } from '../utils'
 import { scan, registerScanner } from './component_scan'
 import { AnnotationType, annotationHelper } from './helper'
 
+const appConfigs = {}
+
 const configParser = {
   json: function (content) {
     if (!content) {
@@ -18,10 +20,7 @@ export function registerConfigParser (key: string, parser: Function) {
   configParser[key] = parser
 }
 
-const appConfigs = {}
-
 registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean) {
-  // console.log(fpath, isExclude, isFile)
   if (!isFile || isExclude) {
     return
   }
@@ -35,11 +34,9 @@ registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean) {
   }
 })
 
-const app = function (target: Function, options?: any) {
+const app = function (annoType: AnnotationType, target: Function, options?: any) {
   // do component scan, add annotations to bean factory
-  scan(target)
-  // TODO
-  // parse annotation
+  scan(annoType, target)
 
   // start app: web mode | task mode
   if (typeof target['main'] === 'function') {

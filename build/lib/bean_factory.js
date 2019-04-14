@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const helper_1 = require("./annos/helper");
+exports.CTOR_ID = '__ctorId';
 class BeanFactory {
     static setCurrentSourceFile(sf) {
         BeanFactory.currentSourceFile = sf;
@@ -8,45 +9,55 @@ class BeanFactory {
     static getCurrentSourceFile() {
         return BeanFactory.currentSourceFile;
     }
-    static addAnnotation(annoType, target, prop, anno, params) {
-        let ctor = target;
+    static addBeanMeta(annoType, target, prop, anno, params) {
+        let ctor;
         if (typeof target === 'object') {
             ctor = target.constructor;
         }
-        if (ctor && typeof ctor['__ctorId'] === 'undefined') {
-            BeanFactory.beanCnt++;
-            ctor['__ctorId'] = 'b' + BeanFactory.beanCnt;
+        else {
+            ctor = target;
         }
-        if (typeof BeanFactory.beans[ctor['__ctorId']] === 'undefined') {
-            BeanFactory.beans[ctor['__ctorId']] = {
-                file: BeanFactory.currentSourceFile,
-                clz: ctor,
-                ins: null,
-                clzAnnos: [],
-                methodAnnos: {},
-                fieldAnnos: {}
-            };
+        const ctorId = ctor[exports.CTOR_ID];
+        if (!ctorId) {
+            throw new Error(ctor.name + '.' + exports.CTOR_ID + ' is undefined');
         }
-        const targetMetas = BeanFactory.beans[ctor['__ctorId']];
+        if (typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
+            let beanMeta = {};
+            beanMeta.file = BeanFactory.currentSourceFile;
+            beanMeta.clz = ctor;
+            beanMeta.clzAnnos = [];
+            beanMeta.methodAnnos = {};
+            beanMeta.fieldAnnos = {};
+            BeanFactory.beansMeta[ctorId] = beanMeta;
+        }
+        const beanMeta = BeanFactory.beansMeta[ctorId];
         switch (annoType) {
             case helper_1.AnnotationType.clz:
-                targetMetas.clzAnnos.push([anno, params]);
+                beanMeta.clzAnnos.push([anno, params]);
                 break;
             case helper_1.AnnotationType.method:
-                if (typeof targetMetas.methodAnnos[prop] === 'undefined') {
-                    targetMetas.methodAnnos[prop] = [];
+                if (typeof beanMeta.methodAnnos[prop] === 'undefined') {
+                    beanMeta.methodAnnos[prop] = [];
                 }
-                targetMetas.methodAnnos[prop].push([anno, params]);
+                beanMeta.methodAnnos[prop].push([anno, params]);
                 break;
             case helper_1.AnnotationType.field:
-                if (typeof targetMetas.fieldAnnos[prop] === 'undefined') {
-                    targetMetas.fieldAnnos[prop] = [];
+                if (typeof beanMeta.fieldAnnos[prop] === 'undefined') {
+                    beanMeta.fieldAnnos[prop] = [];
                 }
-                targetMetas.fieldAnnos[prop].push([anno, params]);
+                beanMeta.fieldAnnos[prop].push([anno, params]);
                 break;
             default:
         }
-        console.log(JSON.stringify(targetMetas));
+    }
+    static getBeanMeta(ctor) {
+        const ctorId = ctor[exports.CTOR_ID];
+        if (!ctorId || typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
+            return null;
+        }
+        else {
+            return BeanFactory.beansMeta[ctorId];
+        }
     }
     static addBean(key, target) {
         if (!key) {
@@ -86,8 +97,30 @@ class BeanFactory {
         }
         return target.ins;
     }
+    static registerInitBean(callback) {
+        BeanFactory.initBeanCallbacks.push(callback);
+    }
+    static registerStartBean(callback) {
+        BeanFactory.startBeanCallbacks.push(callback);
+    }
+    static initBean() {
+        BeanFactory.initBeanCallbacks.forEach((cb) => {
+            cb();
+        });
+        BeanFactory.initBeanCallbacks = [];
+    }
+    static startBean() {
+        BeanFactory.startBeanCallbacks.forEach((cb) => {
+            cb();
+        });
+        BeanFactory.startBeanCallbacks;
+    }
+    static destroyBean() {
+        // TODO
+    }
 }
 BeanFactory.container = {};
-BeanFactory.beans = {};
-BeanFactory.beanCnt = 0;
+BeanFactory.beansMeta = {};
+BeanFactory.initBeanCallbacks = [];
+BeanFactory.startBeanCallbacks = [];
 exports.default = BeanFactory;

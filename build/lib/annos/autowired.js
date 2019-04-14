@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
 const helper_1 = require("./helper");
 const bean_factory_1 = require("../bean_factory");
-const callback = function (target, field, name) {
+const callback = function (annoType, target, field, name) {
     name = name || field;
     utils_1.redefineProperty(target, field, {
         get: function () {

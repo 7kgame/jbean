@@ -2,7 +2,7 @@ import { redefineProperty } from '../utils'
 import { AnnotationType, annotationHelper } from './helper'
 import BeanFactory from '../bean_factory'
 
-const callback = function (target: Function | object, field: string, name?: string) {
+const callback = function (annoType: AnnotationType, target: Function | object, field: string, name?: string) {
   name = name || field
   redefineProperty(target, field, {
     get: function () {

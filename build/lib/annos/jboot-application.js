@@ -5,6 +5,7 @@ const Path = require("path");
 const utils_1 = require("../utils");
 const component_scan_1 = require("./component_scan");
 const helper_1 = require("./helper");
+const appConfigs = {};
 const configParser = {
     json: function (content) {
         if (!content) {
@@ -17,9 +18,7 @@ function registerConfigParser(key, parser) {
     configParser[key] = parser;
 }
 exports.registerConfigParser = registerConfigParser;
-const appConfigs = {};
 component_scan_1.registerScanner(function (fpath, isExclude, isFile) {
-    // console.log(fpath, isExclude, isFile)
     if (!isFile || isExclude) {
         return;
     }
@@ -32,9 +31,10 @@ component_scan_1.registerScanner(function (fpath, isExclude, isFile) {
         utils_1.merge(appConfigs, content);
     }
 });
-const app = function (target, options) {
-    // do component scan
-    component_scan_1.scan(target);
+const app = function (annoType, target, options) {
+    // do component scan, add annotations to bean factory
+    component_scan_1.scan(annoType, target);
+    // start app: web mode | task mode
     if (typeof target['main'] === 'function') {
         setTimeout(() => {
             target['main'](utils_1.merge(appConfigs, options));

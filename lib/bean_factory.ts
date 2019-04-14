@@ -9,11 +9,12 @@ export type BeanMeta = {
   fieldAnnos?: {}
 }
 
+export const CTOR_ID: string = '__ctorId'
+
 export default class BeanFactory {
 
   private static container = {}
   private static beansMeta = {}
-  private static beanCnt = 0;
 
   private static currentSourceFile: string
 
@@ -25,7 +26,7 @@ export default class BeanFactory {
     return BeanFactory.currentSourceFile
   }
 
-  public static addAnnotation (
+  public static addBeanMeta (
     annoType: AnnotationType,
     target: object | Function,
     prop: string,
@@ -38,31 +39,23 @@ export default class BeanFactory {
     } else {
       ctor = target
     }
-    if (ctor && typeof ctor['__ctorId'] === 'undefined') {
-      BeanFactory.beanCnt++
-      ctor['__ctorId'] = 'b' + BeanFactory.beanCnt
+    const ctorId = ctor[CTOR_ID]
+    if (!ctorId) {
+      throw new Error(ctor.name + '.' + CTOR_ID + ' is undefined')
     }
-    if (typeof BeanFactory.beansMeta[ctor['__ctorId']] === 'undefined') {
+    if (typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
       let beanMeta:BeanMeta = {}
       beanMeta.file = BeanFactory.currentSourceFile
       beanMeta.clz = ctor
       beanMeta.clzAnnos = []
       beanMeta.methodAnnos = {}
       beanMeta.fieldAnnos = {}
-      BeanFactory.beansMeta[ctor['__ctorId']] = beanMeta
-      // = {
-      //   file: BeanFactory.currentSourceFile,
-      //   clz: ctor,
-      //   ins: null,
-      //   clzAnnos: [],
-      //   methodAnnos: {},
-      //   fieldAnnos: {}
-      // }
+      BeanFactory.beansMeta[ctorId] = beanMeta
     }
-    const beanMeta: BeanMeta = BeanFactory.beansMeta[ctor['__ctorId']]
+    const beanMeta: BeanMeta = BeanFactory.beansMeta[ctorId]
     switch (annoType) {
       case AnnotationType.clz:
-      beanMeta.clzAnnos.push([anno, params])
+        beanMeta.clzAnnos.push([anno, params])
         break
       case AnnotationType.method:
         if (typeof beanMeta.methodAnnos[prop] === 'undefined') {
@@ -78,7 +71,15 @@ export default class BeanFactory {
         break
       default:
     }
-    console.log(JSON.stringify(beanMeta))
+  }
+
+  public static getBeanMeta (ctor: Function): BeanMeta {
+    const ctorId = ctor[CTOR_ID]
+    if (!ctorId || typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
+      return null
+    } else {
+      return BeanFactory.beansMeta[ctorId]
+    }
   }
 
   public static addBean (key: string, target: BeanMeta): void {
@@ -119,5 +120,34 @@ export default class BeanFactory {
       }
     }
     return target.ins
+  }
+
+  private static initBeanCallbacks: Function[] = []
+  private static startBeanCallbacks: Function[] = []
+
+  public static registerInitBean (callback: Function): void {
+    BeanFactory.initBeanCallbacks.push(callback)
+  }
+
+  public static registerStartBean (callback: Function): void {
+    BeanFactory.startBeanCallbacks.push(callback)
+  }
+
+  public static initBean (): void {
+    BeanFactory.initBeanCallbacks.forEach((cb: Function) => {
+      cb()
+    })
+    BeanFactory.initBeanCallbacks = []
+  }
+
+  public static startBean (): void {
+    BeanFactory.startBeanCallbacks.forEach((cb: Function) => {
+      cb()
+    })
+    BeanFactory.startBeanCallbacks
+  }
+
+  public static destroyBean (): void {
+    // TODO
   }
 }

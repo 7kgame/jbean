@@ -17,7 +17,6 @@ export function merge (target, source) {
   } else {
     for (let key in source) {
       const val = source[key]
-      // console.log(key, '-----------', val)
       if (typeof target[key] === 'undefined' || typeof val !== 'object') {
         target[key] = val
       } else {
@@ -66,4 +65,9 @@ export function getObjectType(obj) {
     return 'undefined'
   }
   return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1].toLowerCase()
+}
+
+export function isAsyncFunction (func: Function): boolean {
+  return getObjectType(func) === 'asyncfunction'
+      || func.toString().match(/__awaiter/) !== null
 }

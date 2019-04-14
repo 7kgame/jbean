@@ -8,7 +8,7 @@ const ouertScanner = [];
 exports.registerScanner = function (scanner) {
     ouertScanner.push(scanner);
 };
-exports.scan = function (ctor, options, ext) {
+exports.scan = function (annoType, ctor, options, ext) {
     options = options || '';
     ext = ext || 'js';
     ext = '.' + ext;
@@ -38,9 +38,7 @@ exports.scan = function (ctor, options, ext) {
             });
             if (isFile && !isExclude && fpath.endsWith(ext)) {
                 bean_factory_1.default.setCurrentSourceFile(fpath);
-                // console.log(fpath)
                 require(fpath);
-                // console.log('end======')
                 bean_factory_1.default.setCurrentSourceFile(null);
             }
             ouertScanner.forEach(scanner => {

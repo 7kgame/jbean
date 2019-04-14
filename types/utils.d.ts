@@ -6,6 +6,8 @@ export function readDirSync (path: string, cb: Function): void
 
 export function getObjectType(target: object): string
 
+export function isAsyncFunction (func: Function): boolean
+
 export enum AnnotationType {
   clz,
   method,

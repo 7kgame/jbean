@@ -19,7 +19,6 @@ function merge(target, source) {
     else {
         for (let key in source) {
             const val = source[key];
-            // console.log(key, '-----------', val)
             if (typeof target[key] === 'undefined' || typeof val !== 'object') {
                 target[key] = val;
             }
@@ -71,3 +70,8 @@ function getObjectType(obj) {
     return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1].toLowerCase();
 }
 exports.getObjectType = getObjectType;
+function isAsyncFunction(func) {
+    return getObjectType(func) === 'asyncfunction'
+        || func.toString().match(/__awaiter/) !== null;
+}
+exports.isAsyncFunction = isAsyncFunction;

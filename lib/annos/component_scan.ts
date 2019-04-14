@@ -9,7 +9,7 @@ export const registerScanner = function (scanner: Function) {
   ouertScanner.push(scanner)
 }
 
-export const scan = function (ctor: Function, options?: string | object, ext?: string) {
+export const scan = function (annoType: AnnotationType, ctor: Function, options?: string | object, ext?: string) {
   options = options || ''
   ext = ext || 'js'
   ext = '.' + ext
@@ -40,9 +40,7 @@ export const scan = function (ctor: Function, options?: string | object, ext?: s
       })
       if (isFile && !isExclude && fpath.endsWith(ext)) {
         BeanFactory.setCurrentSourceFile(fpath)
-        // console.log(fpath)
         require(fpath)
-        // console.log('end======')
         BeanFactory.setCurrentSourceFile(null)
       }
       ouertScanner.forEach(scanner => {
