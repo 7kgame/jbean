@@ -7,6 +7,7 @@ export function registerScanner (scanner: Function)
 
 export function JBootApplication (target?: any, options?: any)
 export function registerConfigParser (key: string, parser: Function)
+export function getApplicationConfigs (): object
 
 export function Repository (name?: Function | string)
 export function Service (name?: Function | string)

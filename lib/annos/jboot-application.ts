@@ -16,11 +16,15 @@ const configParser = {
   }
 }
 
-export function registerConfigParser (key: string, parser: Function) {
+export function getApplicationConfigs (): object {
+  return appConfigs
+}
+
+export function registerConfigParser (key: string, parser: Function): void {
   configParser[key] = parser
 }
 
-registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean) {
+registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean): void {
   if (!isFile || isExclude) {
     return
   }
@@ -34,7 +38,7 @@ registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean) {
   }
 })
 
-const app = function (annoType: AnnotationType, target: Function, options?: any) {
+const app = function (annoType: AnnotationType, target: Function, options?: any): void {
   // do component scan, add annotations to bean factory
   scan(annoType, target)
 

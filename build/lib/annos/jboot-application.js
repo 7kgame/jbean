@@ -14,6 +14,10 @@ const configParser = {
         return JSON.parse(content);
     }
 };
+function getApplicationConfigs() {
+    return appConfigs;
+}
+exports.getApplicationConfigs = getApplicationConfigs;
 function registerConfigParser(key, parser) {
     configParser[key] = parser;
 }

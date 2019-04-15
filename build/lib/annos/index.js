@@ -12,6 +12,7 @@ exports.ComponentScan = component_scan_1.default;
 exports.registerScanner = component_scan_1.registerScanner;
 const jboot_application_1 = require("./jboot-application");
 exports.JBootApplication = jboot_application_1.default;
+exports.getApplicationConfigs = jboot_application_1.getApplicationConfigs;
 exports.registerConfigParser = jboot_application_1.registerConfigParser;
 const repository_1 = require("./repository");
 exports.Repository = repository_1.default;
