@@ -110,6 +110,7 @@ class BeanFactory {
     static destroyBean() {
         // TODO
         Object.values(BeanFactory.beans).forEach((target, ins) => {
+            console.log(target);
         });
     }
 }
