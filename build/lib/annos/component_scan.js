@@ -24,8 +24,6 @@ exports.scan = function (annoType, ctor, options, ext) {
     excludes.forEach((item, index) => {
         excludes[index] = Path.resolve(appRoot, item);
     });
-    // console.log(includes)
-    // console.log(excludes)
     includes.forEach(dir => {
         utils_1.readDirSync(dir, (fpath, isFile) => {
             let isExclude = false;

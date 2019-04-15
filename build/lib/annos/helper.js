@@ -22,26 +22,29 @@ const addCtorId = function (target) {
         ctor[bean_factory_1.CTOR_ID] = ctor.name + ':' + (++clzCnt);
     }
 };
-const doCallback = function (callback, args0, args1) {
+const doCallback = function (annoType, callback, args0, args1, ignoreAnnotationTypeInference) {
     if (!callback) {
         return;
     }
-    let annoType = AnnotationType.clz;
     if (utils_1.getObjectType(args0) === 'arguments') {
         args0 = Array.prototype.slice.call(args0, 0);
     }
     if (utils_1.getObjectType(args1) === 'arguments') {
         args1 = Array.prototype.slice.call(args1, 0);
     }
+    let inferencedAnnoType = AnnotationType.clz;
     if (args0.length > 2) {
-        annoType = AnnotationType.method;
+        inferencedAnnoType = AnnotationType.method;
     }
     else if (args0.length == 2) {
-        annoType = AnnotationType.field;
+        inferencedAnnoType = AnnotationType.field;
     }
-    callback(annoType, ...args0.concat(args1));
+    if (ignoreAnnotationTypeInference) {
+        inferencedAnnoType = annoType;
+    }
+    callback(inferencedAnnoType, ...args0.concat(args1));
 };
-function annotationHelper(annoType, callback, args) {
+function annotationHelper(annoType, callback, args, ignoreAnnotationTypeInference) {
     switch (annoType) {
         case AnnotationType.clz:
             if (args.length === 1 && typeof args[0] === 'function') {
@@ -51,7 +54,7 @@ function annotationHelper(annoType, callback, args) {
             }
             return function () {
                 addCtorId(arguments[0]);
-                doCallback(callback, arguments, args);
+                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
             };
         // return target => {
         //   addCtorId(target)
@@ -68,7 +71,7 @@ function annotationHelper(annoType, callback, args) {
             }
             return function () {
                 addCtorId(arguments[0]);
-                doCallback(callback, arguments, args);
+                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
             };
         // return (target: any, method: string, descriptor: PropertyDescriptor) => {
         //   addCtorId(target)
@@ -84,7 +87,7 @@ function annotationHelper(annoType, callback, args) {
             }
             return function () {
                 addCtorId(arguments[0]);
-                doCallback(callback, arguments, args);
+                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
             };
         // return (target: any, field: string) => {
         //   addCtorId(target)

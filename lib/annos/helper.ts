@@ -1,5 +1,5 @@
 import { CTOR_ID } from '../bean_factory'
-import { getObjectType } from '../utils';
+import { getObjectType, rtrimUndefinedArgument } from '../utils';
 
 export enum AnnotationType {
   clz,
@@ -22,26 +22,30 @@ const addCtorId = function (target: object | Function) {
   }
 }
 
-const doCallback = function (callback: Function, args0, args1): void {
+const doCallback = function (annoType: AnnotationType, callback: Function, args0, args1, ignoreAnnotationTypeInference?: boolean): void {
   if (!callback) {
     return
   }
-  let annoType = AnnotationType.clz
   if (getObjectType(args0) === 'arguments') {
     args0 = Array.prototype.slice.call(args0, 0)
   }
   if (getObjectType(args1) === 'arguments') {
     args1 = Array.prototype.slice.call(args1, 0)
   }
+
+  let inferencedAnnoType = AnnotationType.clz
   if (args0.length > 2) {
-    annoType = AnnotationType.method
+    inferencedAnnoType = AnnotationType.method
   } else if (args0.length == 2) {
-    annoType = AnnotationType.field
+    inferencedAnnoType = AnnotationType.field
   }
-  callback(annoType, ...args0.concat(args1))
+  if (ignoreAnnotationTypeInference) {
+    inferencedAnnoType = annoType
+  }
+  callback(inferencedAnnoType, ...args0.concat(args1))
 }
 
-export function annotationHelper (annoType: AnnotationType, callback: Function, args) {
+export function annotationHelper (annoType: AnnotationType, callback: Function, args, ignoreAnnotationTypeInference?: boolean) {
   switch (annoType) {
     case AnnotationType.clz:
       if (args.length === 1 && typeof args[0] === 'function') {
@@ -51,7 +55,7 @@ export function annotationHelper (annoType: AnnotationType, callback: Function, 
       }
       return function () {
         addCtorId(arguments[0])
-        doCallback(callback, arguments, args)
+        doCallback(annoType, callback, rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference)
       }
       // return target => {
       //   addCtorId(target)
@@ -68,7 +72,7 @@ export function annotationHelper (annoType: AnnotationType, callback: Function, 
       }
       return function () {
         addCtorId(arguments[0])
-        doCallback(callback, arguments, args)
+        doCallback(annoType, callback, rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference)
       }
       // return (target: any, method: string, descriptor: PropertyDescriptor) => {
       //   addCtorId(target)
@@ -84,7 +88,7 @@ export function annotationHelper (annoType: AnnotationType, callback: Function, 
       }
       return function () {
         addCtorId(arguments[0])
-        doCallback(callback, arguments, args)
+        doCallback(annoType, callback, rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference)
       }
       // return (target: any, field: string) => {
       //   addCtorId(target)

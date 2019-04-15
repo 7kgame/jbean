@@ -64,32 +64,24 @@ class BeanFactory {
             return;
         }
         key = key.toLowerCase();
-        if (target.clz && BeanFactory.container[key] && BeanFactory.container[key].clz) {
-            throw new Error('Bean name "' + key + '" for ' + target.clz.name + ' conflicts with ' + BeanFactory.container[key].clz.name);
+        if (BeanFactory.beans[key]) {
+            throw new Error('Bean name "' + key + '" for ' + target.name + ' conflicts with ' + BeanFactory.beans[key].target.name);
         }
-        const target0 = BeanFactory.container[key] || {};
-        for (let k in target) {
-            target0[k] = target[k];
-        }
-        BeanFactory.container[key] = target0;
-        // if (target0.clz && !target0.ins) {
-        //   const clz: any = target0.clz;
-        //   target0.ins = new clz();
-        //   if (typeof target0.ins['postInit'] === 'function') {
-        //     target0.ins['postInit']()
-        //   }
-        // }
+        BeanFactory.beans[key] = {
+            target: target,
+            ins: null
+        };
     }
     static getBean(key) {
         if (!key) {
             return null;
         }
-        const target = BeanFactory.container[key.toLowerCase()];
-        if (!target || !target.clz) {
+        const target = BeanFactory.beans[key];
+        if (!target || !target.target) {
             return null;
         }
         if (!target.ins) {
-            const clz = target.clz;
+            const clz = target.target;
             target.ins = new clz();
             if (typeof target.ins['postInit'] === 'function') {
                 target.ins['postInit']();
@@ -117,9 +109,11 @@ class BeanFactory {
     }
     static destroyBean() {
         // TODO
+        Object.values(BeanFactory.beans).forEach((target, ins) => {
+        });
     }
 }
-BeanFactory.container = {};
+BeanFactory.beans = {};
 BeanFactory.beansMeta = {};
 BeanFactory.initBeanCallbacks = [];
 BeanFactory.startBeanCallbacks = [];

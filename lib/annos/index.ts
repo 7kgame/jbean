@@ -1,8 +1,10 @@
+import { AnnotationType, annotationHelper } from './helper'
 import Autowired from './autowired'
 import Bean from './bean'
 import ComponentScan, { registerScanner } from './component_scan'
 import JBootApplication, { registerConfigParser } from './jboot-application'
-import { AnnotationType, annotationHelper } from './helper'
+import Repository from './repository'
+import Service from './service'
 
 export {
   Autowired,
@@ -12,5 +14,7 @@ export {
   ComponentScan,
   JBootApplication,
   registerConfigParser,
-  registerScanner
+  registerScanner,
+  Repository,
+  Service
 }

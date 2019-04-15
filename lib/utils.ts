@@ -71,3 +71,18 @@ export function isAsyncFunction (func: Function): boolean {
   return getObjectType(func) === 'asyncfunction'
       || func.toString().match(/__awaiter/) !== null
 }
+
+export function rtrimUndefinedArgument (args): any[] {
+  if (getObjectType(args) === 'arguments') {
+    args = Array.prototype.slice.call(args, 0)
+  }
+  let currentLoop = 0
+  const maxLoop = args.length
+  while(currentLoop < maxLoop) {
+    if (typeof args[args.length-1] === 'undefined') {
+      args.pop()
+    }
+    currentLoop++
+  }
+  return args
+}

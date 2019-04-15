@@ -75,3 +75,18 @@ function isAsyncFunction(func) {
         || func.toString().match(/__awaiter/) !== null;
 }
 exports.isAsyncFunction = isAsyncFunction;
+function rtrimUndefinedArgument(args) {
+    if (getObjectType(args) === 'arguments') {
+        args = Array.prototype.slice.call(args, 0);
+    }
+    let currentLoop = 0;
+    const maxLoop = args.length;
+    while (currentLoop < maxLoop) {
+        if (typeof args[args.length - 1] === 'undefined') {
+            args.pop();
+        }
+        currentLoop++;
+    }
+    return args;
+}
+exports.rtrimUndefinedArgument = rtrimUndefinedArgument;

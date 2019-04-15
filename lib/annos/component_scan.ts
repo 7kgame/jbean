@@ -26,8 +26,6 @@ export const scan = function (annoType: AnnotationType, ctor: Function, options?
   excludes.forEach( (item, index) => {
     excludes[index] = Path.resolve(appRoot, item)
   })
-  // console.log(includes)
-  // console.log(excludes)
   includes.forEach( dir => {
     readDirSync(dir, (fpath: string, isFile: boolean) => {
       let isExclude = false

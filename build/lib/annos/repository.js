@@ -6,7 +6,7 @@ const callback = function (annoType, ctor, name) {
     name = name || ctor.name;
     bean_factory_1.default.addBean(name, ctor);
 };
-function default_1(component) {
+function Repository(name) {
     return helper_1.annotationHelper(helper_1.AnnotationType.clz, callback, arguments);
 }
-exports.default = default_1;
+exports.default = Repository;

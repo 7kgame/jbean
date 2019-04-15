@@ -73,7 +73,7 @@ class ReflectHelper {
         }
         annos = annos.concat(methodsAnnos);
         const originFunc = ctor.prototype[method];
-        const callerStack = [];
+        let callerStack = [];
         let hasAsyncFunc = false;
         annos.forEach(([caller, args]) => {
             if (typeof caller.preCall !== 'function') {
@@ -92,13 +92,16 @@ class ReflectHelper {
             callerStack.push([true, true, false, utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]);
         }
+        let tempCallStack4PostCall = [];
         annos.forEach(([caller, args]) => {
             if (typeof caller.postCall !== 'function') {
                 return;
             }
-            callerStack.push([false, true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args]);
+            tempCallStack4PostCall.push([false, true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(caller.postCall);
         });
+        tempCallStack4PostCall.reverse();
+        callerStack = callerStack.concat(tempCallStack4PostCall);
         const prepareCallerParams = function (callerInfo, args0, ret) {
             const [needCtx, needRet, isOriginFunc, isAsyncFunc, caller, args1] = callerInfo;
             let args = [];

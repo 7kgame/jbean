@@ -6,6 +6,6 @@ const callback = function (annoType: AnnotationType, ctor: Function, name?: stri
   BeanFactory.addBean(name, ctor)
 }
 
-export default function (component?: Function | string) {
+export default function Service (name?: Function | string) {
   return annotationHelper(AnnotationType.clz, callback, arguments)
 }
