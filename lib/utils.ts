@@ -57,7 +57,7 @@ export function readDirSync (path, cb: Function) {
   });
 }
 
-export function getObjectType(obj) {
+export function getObjectType(obj: any) {
   if (obj === null) {
     return 'null'
   }

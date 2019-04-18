@@ -4,7 +4,7 @@ export function redefineProperty (target: object, key: string, config: object): 
 
 export function readDirSync (path: string, cb: Function): void
 
-export function getObjectType(target: object): string
+export function getObjectType(target: any): string
 
 export function isAsyncFunction (func: Function): boolean
 
