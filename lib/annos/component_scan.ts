@@ -49,5 +49,5 @@ export const scan = function (annoType: AnnotationType, ctor: Function, options?
 }
 
 export default function ComponentScan (options?: string | object | Function, ext?: string) {
-  return annotationHelper(AnnotationType.clz, scan, arguments)
+  return annotationHelper(arguments, scan)
 }

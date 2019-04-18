@@ -38,7 +38,7 @@ registerScanner(function (fpath: string, isExclude: boolean, isFile: boolean): v
   }
 })
 
-const app = function (annoType: AnnotationType, target: Function, options?: any): void {
+const appCallback = function (annoType: AnnotationType, target: Function, options?: any): void {
   // do component scan, add annotations to bean factory
   scan(annoType, target)
 
@@ -51,5 +51,5 @@ const app = function (annoType: AnnotationType, target: Function, options?: any)
 }
 
 export default function JBootApplication (target?: any, options?: any) {
-  return annotationHelper(AnnotationType.clz, app, arguments)
+  return annotationHelper(arguments, appCallback)
 }

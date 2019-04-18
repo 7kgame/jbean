@@ -7,6 +7,7 @@ var AnnotationType;
     AnnotationType[AnnotationType["clz"] = 0] = "clz";
     AnnotationType[AnnotationType["method"] = 1] = "method";
     AnnotationType[AnnotationType["field"] = 2] = "field";
+    AnnotationType[AnnotationType["none"] = 3] = "none";
 })(AnnotationType = exports.AnnotationType || (exports.AnnotationType = {}));
 let compileTrick;
 let clzCnt = 0;
@@ -22,78 +23,48 @@ const addCtorId = function (target) {
         ctor[bean_factory_1.CTOR_ID] = ctor.name + ':' + (++clzCnt);
     }
 };
-const doCallback = function (annoType, callback, args0, args1, ignoreAnnotationTypeInference) {
-    if (!callback) {
-        return;
+function checkAnnotationType(args) {
+    if (args.length === 1
+        && typeof args[0] === 'function'
+        && args[0].name.toLowerCase() !== 'object') {
+        return AnnotationType.clz;
     }
-    if (utils_1.getObjectType(args0) === 'arguments') {
-        args0 = Array.prototype.slice.call(args0, 0);
+    if (args.length === 3
+        && (typeof args[0] === 'object' || typeof args[0] === 'function')
+        && typeof args[1] === 'string'
+        && typeof args[2] === 'object'
+        && ((args[0].constructor && args[0].constructor.name.toLowerCase() !== 'object')
+            || args[0].name.toLowerCase() !== 'object')
+        && (typeof args[2]['value'] !== 'undefined' && typeof args[2]['enumerable'] !== 'undefined')) {
+        return AnnotationType.method;
     }
-    if (utils_1.getObjectType(args1) === 'arguments') {
-        args1 = Array.prototype.slice.call(args1, 0);
+    if (args.length >= 2
+        && (typeof args[0] === 'object' || typeof args[0] === 'function')
+        && typeof args[1] === 'string'
+        && ((args[0].constructor && args[0].constructor.name.toLowerCase() !== 'object')
+            || args[0].name.toLowerCase() !== 'object')) {
+        return AnnotationType.field;
     }
-    let inferencedAnnoType = AnnotationType.clz;
-    if (args0.length > 2) {
-        inferencedAnnoType = AnnotationType.method;
+    return AnnotationType.none;
+}
+exports.checkAnnotationType = checkAnnotationType;
+function annotationHelper(args, callback, ignoreAnnotationTypeInference) {
+    let annoType = checkAnnotationType(args);
+    if (utils_1.getObjectType(args) === 'arguments') {
+        args = Array.prototype.slice.call(args, 0);
     }
-    else if (args0.length == 2) {
-        inferencedAnnoType = AnnotationType.field;
+    if (annoType === AnnotationType.none) {
+        return function () {
+            addCtorId(arguments[0]);
+            annoType = checkAnnotationType(arguments);
+            const args0 = utils_1.rtrimUndefinedArgument(arguments);
+            callback && callback(annoType, ...args0.concat(args));
+        };
     }
-    if (ignoreAnnotationTypeInference) {
-        inferencedAnnoType = annoType;
+    else {
+        addCtorId(args[0]);
+        callback && callback(annoType, ...args);
+        return compileTrick;
     }
-    callback(inferencedAnnoType, ...args0.concat(args1));
-};
-function annotationHelper(annoType, callback, args, ignoreAnnotationTypeInference) {
-    switch (annoType) {
-        case AnnotationType.clz:
-            if (args.length === 1 && typeof args[0] === 'function') {
-                addCtorId(args[0]);
-                callback && callback(annoType, ...args);
-                return compileTrick;
-            }
-            return function () {
-                addCtorId(arguments[0]);
-                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
-            };
-        // return target => {
-        //   addCtorId(target)
-        //   callback && callback(target, ...args)
-        // }
-        case AnnotationType.method:
-            if (args.length === 3
-                && (typeof args[0] === 'object' || typeof args[0] === 'function')
-                && typeof args[2] === 'object'
-                && typeof args[2].value !== 'undefined') {
-                addCtorId(args[0]);
-                callback && callback(annoType, ...args);
-                return compileTrick;
-            }
-            return function () {
-                addCtorId(arguments[0]);
-                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
-            };
-        // return (target: any, method: string, descriptor: PropertyDescriptor) => {
-        //   addCtorId(target)
-        //   callback && callback(target, method, descriptor, ...args)
-        // }
-        case AnnotationType.field:
-            if (args.length >= 2
-                && (typeof args[0] === 'object' || typeof args[0] === 'function')
-                && typeof args[1] === 'string') {
-                addCtorId(args[0]);
-                callback && callback(annoType, ...args);
-                return compileTrick;
-            }
-            return function () {
-                addCtorId(arguments[0]);
-                doCallback(annoType, callback, utils_1.rtrimUndefinedArgument(arguments), args, ignoreAnnotationTypeInference);
-            };
-        // return (target: any, field: string) => {
-        //   addCtorId(target)
-        //   callback && callback(target, field, ...args)
-        // }
-    }
-    return compileTrick;
 }
 exports.annotationHelper = annotationHelper;

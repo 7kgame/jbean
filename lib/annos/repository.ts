@@ -7,5 +7,5 @@ const callback = function (annoType: AnnotationType, ctor: Function, name?: stri
 }
 
 export default function Repository (name?: Function | string) {
-  return annotationHelper(AnnotationType.clz, callback, arguments)
+  return annotationHelper(arguments, callback)
 }

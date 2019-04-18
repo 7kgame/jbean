@@ -9,7 +9,7 @@ const callback = function (annoType, target, field, name) {
     autowiredTargets.push([target, field, name.toLowerCase()]);
 };
 function Autowired(component, name) {
-    return helper_1.annotationHelper(helper_1.AnnotationType.field, callback, arguments, true);
+    return helper_1.annotationHelper(arguments, callback);
 }
 exports.default = Autowired;
 bean_factory_1.default.registerStartBean(() => {

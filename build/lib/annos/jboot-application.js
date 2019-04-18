@@ -35,7 +35,7 @@ component_scan_1.registerScanner(function (fpath, isExclude, isFile) {
         utils_1.merge(appConfigs, content);
     }
 });
-const app = function (annoType, target, options) {
+const appCallback = function (annoType, target, options) {
     // do component scan, add annotations to bean factory
     component_scan_1.scan(annoType, target);
     // start app: web mode | task mode
@@ -46,6 +46,6 @@ const app = function (annoType, target, options) {
     }
 };
 function JBootApplication(target, options) {
-    return helper_1.annotationHelper(helper_1.AnnotationType.clz, app, arguments);
+    return helper_1.annotationHelper(arguments, appCallback);
 }
 exports.default = JBootApplication;

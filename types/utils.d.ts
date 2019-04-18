@@ -11,7 +11,8 @@ export function isAsyncFunction (func: Function): boolean
 export enum AnnotationType {
   clz,
   method,
-  field
+  field,
+  none
 }
 
-export function annotationHelper (annoType: AnnotationType, callback: Function, args, ignoreAnnotationTypeInference?: boolean): any
+export function annotationHelper (args, callback: Function, ignoreAnnotationTypeInference?: boolean): any

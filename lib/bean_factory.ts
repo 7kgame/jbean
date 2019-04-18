@@ -82,17 +82,22 @@ export default class BeanFactory {
     }
   }
 
-  public static addBean (key: string, target: Function): void {
+  public static addBean (key: string, target: Function | object): void {
     if (!key) {
       return
     }
     key = key.toLowerCase()
+    let ins = null
+    if (typeof target === 'object') {
+      ins = target
+      target = target.constructor
+    }
     if (BeanFactory.beans[key]) {
-      throw new Error('Bean name "' + key + '" for '+ target.name + ' conflicts with ' + BeanFactory.beans[key].target.name)
+      throw new Error('Bean name "' + key + '" for '+ target['name'] + ' conflicts with ' + BeanFactory.beans[key].target.name)
     }
     BeanFactory.beans[key] = {
       target: target,
-      ins: null
+      ins: ins
     }
   }
 

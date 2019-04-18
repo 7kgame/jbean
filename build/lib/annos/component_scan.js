@@ -46,6 +46,6 @@ exports.scan = function (annoType, ctor, options, ext) {
     });
 };
 function ComponentScan(options, ext) {
-    return helper_1.annotationHelper(helper_1.AnnotationType.clz, exports.scan, arguments);
+    return helper_1.annotationHelper(arguments, exports.scan);
 }
 exports.default = ComponentScan;

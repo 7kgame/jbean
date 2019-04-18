@@ -7,5 +7,5 @@ const callback = function (annoType: AnnotationType, ctor: Function, name?: stri
 }
 
 export default function Service (name?: Function | string) {
-  return annotationHelper(AnnotationType.clz, callback, arguments)
+  return annotationHelper(arguments, callback)
 }

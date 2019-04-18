@@ -10,7 +10,7 @@ const callback = function (annoType: AnnotationType, target: Function | object, 
 }
 
 export default function Autowired (component?: any, name?: any) {
-  return annotationHelper(AnnotationType.field, callback, arguments, true)
+  return annotationHelper(arguments, callback)
 }
 
 BeanFactory.registerStartBean(() => {

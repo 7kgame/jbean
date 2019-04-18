@@ -24,7 +24,7 @@ export class BeanFactory {
   
   public static getBeanMeta (ctor: Function): BeanMeta
 
-  public static addBean (key: string, target: BeanMeta): void
+  public static addBean (key: string, target: Function | object): void
   public static getBean (key: string): object
 
   public static registerInitBean (callback: Function)

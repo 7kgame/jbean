@@ -7,6 +7,6 @@ const callback = function (annoType, ctor, name) {
     bean_factory_1.default.addBean(name, ctor);
 };
 function Service(name) {
-    return helper_1.annotationHelper(helper_1.AnnotationType.clz, callback, arguments);
+    return helper_1.annotationHelper(arguments, callback);
 }
 exports.default = Service;
