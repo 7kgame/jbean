@@ -126,11 +126,16 @@ export default class ReflectHelper {
         while(currentCallIdx < callerStackLen) {
           const [caller, needCtx, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet)
           const ctx = needCtx ? this : null
+          let ret = undefined
           if (isAsyncFunc) {
-            preRet = await caller.call(ctx, ...args)
+            ret = await caller.call(ctx, ...args)
           } else {
-            preRet = caller.call(ctx, ...args)
+            ret = caller.call(ctx, ...args)
           }
+          if (ret === null) {
+            break
+          }
+          preRet = ret
           currentCallIdx++
         }
         return preRet
@@ -144,7 +149,11 @@ export default class ReflectHelper {
         while(currentCallIdx < callerStackLen) {
           const [caller, needCtx, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet)
           const ctx = needCtx ? this : null
-          preRet = caller.call(ctx, ...args)
+          let ret = caller.call(ctx, ...args)
+          if (ret === null) {
+            break
+          }
+          preRet = ret
           currentCallIdx++
         }
         return preRet

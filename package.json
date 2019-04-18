@@ -1,6 +1,6 @@
 {
   "name": "jbean",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "bean factory for jweb",
   "main": "build/lib/index.js",
   "typings": "types/index.d.ts",
