@@ -79,17 +79,17 @@ class ReflectHelper {
             if (typeof caller.preCall !== 'function') {
                 return;
             }
-            callerStack.push([false, false, false, utils_1.isAsyncFunction(caller.preCall), caller.preCall, args]);
+            callerStack.push([false, false, utils_1.isAsyncFunction(caller.preCall), caller.preCall, args]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(caller.preCall);
         });
         if (ReflectHelper.methodExist(ctor, BEFORE_CALL_NAME, 0, true)) {
-            callerStack.push([true, false, false, utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null]);
+            callerStack.push([false, false, utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]);
         }
-        callerStack.push([true, true, true, utils_1.isAsyncFunction(originFunc), originFunc, null]);
+        callerStack.push([true, true, utils_1.isAsyncFunction(originFunc), originFunc, null]);
         hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(originFunc);
         if (ReflectHelper.methodExist(ctor, AFTER_CALL_NAME, 0, true)) {
-            callerStack.push([true, true, false, utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null]);
+            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]);
         }
         let tempCallStack4PostCall = [];
@@ -97,13 +97,13 @@ class ReflectHelper {
             if (typeof caller.postCall !== 'function') {
                 return;
             }
-            tempCallStack4PostCall.push([false, true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args]);
+            tempCallStack4PostCall.push([true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(caller.postCall);
         });
         tempCallStack4PostCall.reverse();
         callerStack = callerStack.concat(tempCallStack4PostCall);
         const prepareCallerParams = function (callerInfo, args0, ret) {
-            const [needCtx, needRet, isOriginFunc, isAsyncFunc, caller, args1] = callerInfo;
+            const [needRet, isOriginFunc, isAsyncFunc, caller, args1] = callerInfo;
             let args = [];
             if (needRet && !isOriginFunc) {
                 args.push(ret);
@@ -115,7 +115,7 @@ class ReflectHelper {
             if (isOriginFunc) {
                 args = args0;
             }
-            return [caller, needCtx, isAsyncFunc, args];
+            return [caller, isAsyncFunc, args];
         };
         if (hasAsyncFunc) {
             ctor.prototype[method] = function () {
@@ -125,14 +125,13 @@ class ReflectHelper {
                     const args0 = Array.prototype.slice.call(arguments, 0);
                     let preRet = null;
                     while (currentCallIdx < callerStackLen) {
-                        const [caller, needCtx, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
-                        const ctx = needCtx ? this : null;
+                        const [caller, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
                         let ret = undefined;
                         if (isAsyncFunc) {
-                            ret = yield caller.call(ctx, ...args);
+                            ret = yield caller.call(this, ...args);
                         }
                         else {
-                            ret = caller.call(ctx, ...args);
+                            ret = caller.call(this, ...args);
                         }
                         if (ret === null) {
                             break;
@@ -151,9 +150,8 @@ class ReflectHelper {
                 const args0 = Array.prototype.slice.call(arguments, 0);
                 let preRet = null;
                 while (currentCallIdx < callerStackLen) {
-                    const [caller, needCtx, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
-                    const ctx = needCtx ? this : null;
-                    let ret = caller.call(ctx, ...args);
+                    const [caller, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
+                    let ret = caller.call(this, ...args);
                     if (ret === null) {
                         break;
                     }
