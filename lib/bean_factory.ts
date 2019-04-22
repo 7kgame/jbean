@@ -147,7 +147,7 @@ export default class BeanFactory {
   public static destroyBean (): void {
     // TODO
     Object.values(BeanFactory.beans).forEach((target, ins) => {
-      console.log(target)
+      // console.log(target)
     })
   }
 }
