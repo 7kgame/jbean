@@ -10,6 +10,4 @@ export function registerConfigParser (key: string, parser: Function): void
 export function getApplicationConfigs (): object
 
 export function Repository (name?: Function | string)
-export function Scheduled (options: Function | string | object)
-export const SCHEDULED_KEY: string
 export function Service (name?: Function | string)

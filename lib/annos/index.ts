@@ -4,7 +4,6 @@ import Bean from './bean'
 import ComponentScan, { registerScanner } from './component_scan'
 import JBootApplication, { getApplicationConfigs, registerConfigParser } from './jboot-application'
 import Repository from './repository'
-import Scheduled, { SCHEDULED_KEY } from './scheduled'
 import Service from './service'
 
 export {
@@ -18,7 +17,5 @@ export {
   registerConfigParser,
   registerScanner,
   Repository,
-  Scheduled,
-  SCHEDULED_KEY,
   Service
 }
