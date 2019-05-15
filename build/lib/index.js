@@ -8,5 +8,7 @@ exports.BeanFactory = bean_factory_1.default;
 exports.CTOR_ID = bean_factory_1.CTOR_ID;
 const reflect_helper_1 = require("./reflect_helper");
 exports.ReflectHelper = reflect_helper_1.default;
+const business_exception_1 = require("./business_exception");
+exports.BusinessException = business_exception_1.default;
 __export(require("./annos"));
 __export(require("./utils"));

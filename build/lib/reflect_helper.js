@@ -8,10 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const business_exception_1 = require("./business_exception");
 const bean_factory_1 = require("./bean_factory");
 const utils_1 = require("./utils");
 const BEFORE_CALL_NAME = 'beforeCall';
 const AFTER_CALL_NAME = 'afterCall';
+const PRE_AROUND_NAME = 'preAround';
+const POST_AROUND_NAME = 'postAround';
 class ReflectHelper {
     static getMethods(ctor, checkBeforeAfterCaller) {
         return Object.getOwnPropertyNames(ctor.prototype).filter((item) => {
@@ -20,7 +23,8 @@ class ReflectHelper {
             }
             if (!checkBeforeAfterCaller &&
                 (item === BEFORE_CALL_NAME ||
-                    item === AFTER_CALL_NAME)) {
+                    item === AFTER_CALL_NAME || item === PRE_AROUND_NAME
+                    || item === POST_AROUND_NAME)) {
                 return false;
             }
             return typeof ctor.prototype[item] === 'function';
@@ -71,39 +75,47 @@ class ReflectHelper {
             }
             annos.push(classAnnos[i]);
         }
-        annos = annos.concat(methodsAnnos);
+        annos = annos.concat(methodsAnnos).reverse();
         const originFunc = ctor.prototype[method];
         let callerStack = [];
         let hasAsyncFunc = false;
+        if (ReflectHelper.methodExist(ctor, BEFORE_CALL_NAME, 0, true)) {
+            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null, BEFORE_CALL_NAME, true]);
+            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]);
+        }
         annos.forEach(([caller, args]) => {
             if (typeof caller.preCall !== 'function') {
                 return;
             }
-            callerStack.push([false, false, utils_1.isAsyncFunction(caller.preCall), caller.preCall, args]);
+            callerStack.push([true, false, utils_1.isAsyncFunction(caller.preCall), caller.preCall, args, caller.name, true]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(caller.preCall);
         });
-        if (ReflectHelper.methodExist(ctor, BEFORE_CALL_NAME, 0, true)) {
-            callerStack.push([false, false, utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null]);
-            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]);
+        if (ReflectHelper.methodExist(ctor, PRE_AROUND_NAME, 0, true)) {
+            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[PRE_AROUND_NAME]), ctor.prototype[PRE_AROUND_NAME], null, PRE_AROUND_NAME, true]);
+            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[PRE_AROUND_NAME]);
         }
-        callerStack.push([true, true, utils_1.isAsyncFunction(originFunc), originFunc, null]);
+        callerStack.push([true, true, utils_1.isAsyncFunction(originFunc), originFunc, null, originFunc.name, false]);
         hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(originFunc);
-        if (ReflectHelper.methodExist(ctor, AFTER_CALL_NAME, 0, true)) {
-            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null]);
-            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]);
+        if (ReflectHelper.methodExist(ctor, POST_AROUND_NAME, 0, true)) {
+            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[POST_AROUND_NAME]), ctor.prototype[POST_AROUND_NAME], null, POST_AROUND_NAME, false]);
+            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[POST_AROUND_NAME]);
         }
         let tempCallStack4PostCall = [];
         annos.forEach(([caller, args]) => {
             if (typeof caller.postCall !== 'function') {
                 return;
             }
-            tempCallStack4PostCall.push([true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args]);
+            tempCallStack4PostCall.push([true, false, utils_1.isAsyncFunction(caller.postCall), caller.postCall, args, caller.name, false]);
             hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(caller.postCall);
         });
         tempCallStack4PostCall.reverse();
         callerStack = callerStack.concat(tempCallStack4PostCall);
+        if (ReflectHelper.methodExist(ctor, AFTER_CALL_NAME, 0, true)) {
+            callerStack.push([true, false, utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null, AFTER_CALL_NAME, false]);
+            hasAsyncFunc = hasAsyncFunc || utils_1.isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]);
+        }
         const prepareCallerParams = function (callerInfo, args0, ret) {
-            const [needRet, isOriginFunc, isAsyncFunc, caller, args1] = callerInfo;
+            const [needRet, isOriginFunc, isAsyncFunc, caller, args1, callername, pre] = callerInfo;
             let args = [];
             if (needRet && !isOriginFunc) {
                 args.push(ret);
@@ -115,7 +127,7 @@ class ReflectHelper {
             if (isOriginFunc) {
                 args = args0;
             }
-            return [caller, isAsyncFunc, args];
+            return [caller, isAsyncFunc, isOriginFunc, args, callername, pre];
         };
         if (hasAsyncFunc) {
             ctor.prototype[method] = function () {
@@ -123,23 +135,65 @@ class ReflectHelper {
                     let currentCallIdx = 0;
                     const callerStackLen = callerStack.length;
                     const args0 = Array.prototype.slice.call(arguments, 0);
-                    let preRet = null;
+                    let preRet = {
+                        err: null,
+                        data: null,
+                        from: '',
+                        pre: undefined
+                    };
                     while (currentCallIdx < callerStackLen) {
-                        const [caller, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
+                        const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
                         let ret = undefined;
-                        if (isAsyncFunc) {
-                            ret = yield caller.call(this, ...args);
+                        if (preRet && preRet.err && isOriginFunc) { // skip original function when error occurs
+                            currentCallIdx++;
+                            continue;
                         }
-                        else {
-                            ret = caller.call(this, ...args);
+                        try {
+                            if (isAsyncFunc) {
+                                ret = yield caller.call(this, ...args);
+                            }
+                            else {
+                                ret = caller.call(this, ...args);
+                            }
+                            if (ret === null) {
+                                break;
+                            }
+                            if (ret === undefined) {
+                                ret = preRet;
+                            }
+                            if (ret.err && !ret.from && ret.pre === undefined) {
+                                ret.from = callername;
+                                ret.pre = pre;
+                            }
+                            if (isOriginFunc) {
+                                ret = {
+                                    err: null,
+                                    data: ret,
+                                    from: '',
+                                    pre: undefined
+                                };
+                            }
                         }
-                        if (ret === null) {
-                            break;
+                        catch (e) {
+                            if (e instanceof business_exception_1.default) {
+                                ret = {
+                                    err: e.err,
+                                    data: e.data,
+                                    from: callername,
+                                    pre: pre
+                                };
+                            }
+                            else {
+                                throw e;
+                            }
                         }
                         preRet = ret;
                         currentCallIdx++;
                     }
-                    return preRet;
+                    if (preRet.err)
+                        throw new Error(preRet.err);
+                    else
+                        return preRet;
                 });
             };
         }
@@ -148,17 +202,62 @@ class ReflectHelper {
                 let currentCallIdx = 0;
                 const callerStackLen = callerStack.length;
                 const args0 = Array.prototype.slice.call(arguments, 0);
-                let preRet = null;
+                let preRet = {
+                    err: null,
+                    data: null,
+                    from: '',
+                    pre: undefined
+                };
                 while (currentCallIdx < callerStackLen) {
-                    const [caller, isAsyncFunc, args] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
-                    let ret = caller.call(this, ...args);
-                    if (ret === null) {
-                        break;
+                    const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
+                    let ret;
+                    try {
+                        ret = caller.call(this, ...args);
+                        if (preRet && preRet.err && isOriginFunc) {
+                            currentCallIdx++;
+                            continue;
+                        }
+                        if (ret === null) {
+                            break;
+                        }
+                        if (ret === undefined) {
+                            ret = preRet;
+                        }
+                        if (ret.err && !ret.from && ret.pre === undefined) {
+                            ret.from = callername;
+                            ret.pre = pre;
+                        }
+                        if (isOriginFunc) {
+                            ret = {
+                                err: '',
+                                data: ret,
+                                from: '',
+                                pre: undefined
+                            };
+                        }
+                    }
+                    catch (e) {
+                        if (e instanceof business_exception_1.default) {
+                            ret = {
+                                err: e.err,
+                                data: e.data,
+                                from: callername,
+                                pre: pre
+                            };
+                        }
+                        else {
+                            throw e;
+                        }
                     }
                     preRet = ret;
                     currentCallIdx++;
                 }
-                return preRet;
+                if (preRet.err) {
+                    throw new Error(preRet.err);
+                }
+                else {
+                    return preRet;
+                }
             };
         }
     }
