@@ -79,24 +79,24 @@ export default class ReflectHelper {
     let hasAsyncFunc = false
 
     if (ReflectHelper.methodExist(ctor, BEFORE_CALL_NAME, 0, true)) {
-      callerStack.push([true, false, isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null, BEFORE_CALL_NAME, true])
+      callerStack.push([false, isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME]), ctor.prototype[BEFORE_CALL_NAME], null, BEFORE_CALL_NAME, true])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(ctor.prototype[BEFORE_CALL_NAME])
     }
     annos.forEach(([caller, args]) => {
       if (typeof caller.preCall !== 'function') {
         return
       }
-      callerStack.push([true, false, isAsyncFunction(caller.preCall), caller.preCall, args, caller.name, true])
+      callerStack.push([false, isAsyncFunction(caller.preCall), caller.preCall, args, caller.name, true])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(caller.preCall)
     })
     if (ReflectHelper.methodExist(ctor, PRE_AROUND_NAME, 0, true)) {
-      callerStack.push([true, false, isAsyncFunction(ctor.prototype[PRE_AROUND_NAME]), ctor.prototype[PRE_AROUND_NAME], null, PRE_AROUND_NAME, true])
+      callerStack.push([false, isAsyncFunction(ctor.prototype[PRE_AROUND_NAME]), ctor.prototype[PRE_AROUND_NAME], null, PRE_AROUND_NAME, true])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(ctor.prototype[PRE_AROUND_NAME])
     }
-    callerStack.push([true, true, isAsyncFunction(originFunc), originFunc, null, originFunc.name, false])
+    callerStack.push([true, isAsyncFunction(originFunc), originFunc, null, originFunc.name, false])
     hasAsyncFunc = hasAsyncFunc || isAsyncFunction(originFunc)
     if (ReflectHelper.methodExist(ctor, POST_AROUND_NAME, 0, true)) {
-      callerStack.push([true, false, isAsyncFunction(ctor.prototype[POST_AROUND_NAME]), ctor.prototype[POST_AROUND_NAME], null, POST_AROUND_NAME, false])
+      callerStack.push([false, isAsyncFunction(ctor.prototype[POST_AROUND_NAME]), ctor.prototype[POST_AROUND_NAME], null, POST_AROUND_NAME, false])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(ctor.prototype[POST_AROUND_NAME])
     }
     let tempCallStack4PostCall: any[] = []
@@ -104,20 +104,20 @@ export default class ReflectHelper {
       if (typeof caller.postCall !== 'function') {
         return
       }
-      tempCallStack4PostCall.push([true, false, isAsyncFunction(caller.postCall), caller.postCall, args, caller.name, false])
+      tempCallStack4PostCall.push([false, isAsyncFunction(caller.postCall), caller.postCall, args, caller.name, false])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(caller.postCall)
     })
     tempCallStack4PostCall.reverse()
     callerStack = callerStack.concat(tempCallStack4PostCall)
     if (ReflectHelper.methodExist(ctor, AFTER_CALL_NAME, 0, true)) {
-      callerStack.push([true, false, isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null, AFTER_CALL_NAME, false])
+      callerStack.push([false, isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null, AFTER_CALL_NAME, false])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(ctor.prototype[AFTER_CALL_NAME])
     }
 
     const prepareCallerParams = function (callerInfo, args0, ret) {
-      const [needRet, isOriginFunc, isAsyncFunc, caller, args1, callername, pre] = callerInfo
+      const [isOriginFunc, isAsyncFunc, caller, args1, callername, pre] = callerInfo
       let args: any[] = []
-      if (needRet && !isOriginFunc) {
+      if (!isOriginFunc) {
         args.push(ret)
       }
       if (args1) {
@@ -148,20 +148,24 @@ export default class ReflectHelper {
             continue
           }
           try {
+            let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
+              && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
+              && !isOriginFunc
+            let ctx = isAnnotation?{}:this
             if (isAsyncFunc) {
-              ret = await caller.call(this, ...args)
+              ret = await caller.call(ctx, ...args)
             } else {
-              ret = caller.call(this, ...args)
+              ret = caller.call(ctx, ...args)
             }
             if (ret === null) {
               break
             }
+            if (ret && ret.err) {
+              ret.from = ret.from || callername
+              ret.pre = ret.pre || pre
+            }
             if (ret === undefined) {
               ret = preRet
-            }
-            if (ret.err && !ret.from && ret.pre === undefined) {
-              ret.from = callername
-              ret.pre = pre
             }
             if (isOriginFunc) {
               ret = {
@@ -203,21 +207,25 @@ export default class ReflectHelper {
         while (currentCallIdx < callerStackLen) {
           const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet)
           let ret
+          if (preRet && preRet.err && isOriginFunc) {
+            currentCallIdx++
+            continue
+          }
           try {
-            ret = caller.call(this, ...args)
-            if (preRet && preRet.err && isOriginFunc) {
-              currentCallIdx++
-              continue
-            }
+            let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
+              && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
+              && !isOriginFunc
+            let ctx = isAnnotation?{}:this
+            ret = caller.call(ctx, ...args)
             if (ret === null) {
               break
             }
+            if (ret && ret.err) {
+              ret.from = ret.from || callername
+              ret.pre = ret.pre || pre
+            }
             if (ret === undefined) {
               ret = preRet
-            }
-            if (ret.err && !ret.from && ret.pre === undefined) {
-              ret.from = callername
-              ret.pre = pre
             }
             if (isOriginFunc) {
               ret = {
