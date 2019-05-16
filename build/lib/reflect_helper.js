@@ -23,8 +23,9 @@ class ReflectHelper {
             }
             if (!checkBeforeAfterCaller &&
                 (item === BEFORE_CALL_NAME ||
-                    item === AFTER_CALL_NAME || item === PRE_AROUND_NAME
-                    || item === POST_AROUND_NAME)) {
+                    item === AFTER_CALL_NAME ||
+                    item === PRE_AROUND_NAME ||
+                    item === POST_AROUND_NAME)) {
                 return false;
             }
             return typeof ctor.prototype[item] === 'function';

@@ -9,6 +9,7 @@
     "types/*.d.ts"
   ],
   "scripts": {
+    "build": "tsc",
     "tsc": "tsc",
     "start": "node build/example/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"

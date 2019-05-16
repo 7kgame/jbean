@@ -10,22 +10,23 @@ const POST_AROUND_NAME: string = 'postAround'
 
 export default class ReflectHelper {
 
-  public static getMethods(ctor: Function, checkBeforeAfterCaller?: boolean): string[] {
+  public static getMethods (ctor: Function, checkBeforeAfterCaller?: boolean): string[] {
     return Object.getOwnPropertyNames(ctor.prototype).filter((item) => {
       if (item === 'constructor') {
         return false
       }
       if (!checkBeforeAfterCaller &&
         (item === BEFORE_CALL_NAME ||
-          item === AFTER_CALL_NAME || item === PRE_AROUND_NAME
-          || item === POST_AROUND_NAME)) {
+          item === AFTER_CALL_NAME || 
+          item === PRE_AROUND_NAME ||
+          item === POST_AROUND_NAME)) {
         return false
       }
       return typeof ctor.prototype[item] === 'function'
     })
   }
 
-  public static getParentMethods(ctor: Function, checkBeforeAfterCaller?: boolean): string[] | null {
+  public static getParentMethods (ctor: Function, checkBeforeAfterCaller?: boolean): string[] | null {
     const parent = Object.getPrototypeOf(ctor)
     if (!parent.prototype) {
       return null
@@ -33,7 +34,7 @@ export default class ReflectHelper {
     return ReflectHelper.getMethods(parent, checkBeforeAfterCaller)
   }
 
-  public static methodExist(ctor: Function, method: string, loopCnt?: number, checkBeforeAfterCaller?: boolean): boolean {
+  public static methodExist (ctor: Function, method: string, loopCnt?: number, checkBeforeAfterCaller?: boolean): boolean {
     let ctor0 = ctor
     let loop = 0
     if (!loopCnt || loopCnt < 1) {
@@ -55,7 +56,7 @@ export default class ReflectHelper {
     }
   }
 
-  public static resetMethod(ctor: Function, method: string, classAnnos?: any[], methodsAnnos?: any[]): void {
+  public static resetMethod (ctor: Function, method: string, classAnnos?: any[], methodsAnnos?: any[]): void {
     classAnnos = classAnnos || []
     methodsAnnos = methodsAnnos || []
     let annos: any[] = []
@@ -250,7 +251,7 @@ export default class ReflectHelper {
     }
   }
 
-  public static resetClass(ctor: Function): void {
+  public static resetClass (ctor: Function): void {
     const beanMeta: BeanMeta = BeanFactory.getBeanMeta(ctor)
     if (!beanMeta) {
       return
