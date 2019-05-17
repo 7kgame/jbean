@@ -1,5 +1,4 @@
 import { AnnotationType } from './annos/helper'
-import { Type } from './annos'
 
 export type BeanMeta = {
   file?: string
