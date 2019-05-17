@@ -9,7 +9,7 @@ class BeanFactory {
     static getCurrentSourceFile() {
         return BeanFactory.currentSourceFile;
     }
-    static addBeanMeta(annoType, target, prop, anno, params) {
+    static addBeanMeta(annoType, target, prop, anno, params, fieldType) {
         let ctor;
         if (typeof target === 'object') {
             ctor = target.constructor;
@@ -28,6 +28,7 @@ class BeanFactory {
             beanMeta.clzAnnos = [];
             beanMeta.methodAnnos = {};
             beanMeta.fieldAnnos = {};
+            beanMeta.fieldType = {};
             BeanFactory.beansMeta[ctorId] = beanMeta;
         }
         const beanMeta = BeanFactory.beansMeta[ctorId];
@@ -42,10 +43,15 @@ class BeanFactory {
                 beanMeta.methodAnnos[prop].push([anno, params]);
                 break;
             case helper_1.AnnotationType.field:
-                if (typeof beanMeta.fieldAnnos[prop] === 'undefined') {
-                    beanMeta.fieldAnnos[prop] = [];
+                if (fieldType) {
+                    beanMeta.fieldType[prop] = fieldType;
                 }
-                beanMeta.fieldAnnos[prop].push([anno, params]);
+                else {
+                    if (typeof beanMeta.fieldAnnos[prop] === 'undefined') {
+                        beanMeta.fieldAnnos[prop] = [];
+                    }
+                    beanMeta.fieldAnnos[prop].push([anno, params]);
+                }
                 break;
             default:
         }

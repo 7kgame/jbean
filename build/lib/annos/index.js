@@ -18,3 +18,5 @@ const repository_1 = require("./repository");
 exports.Repository = repository_1.default;
 const service_1 = require("./service");
 exports.Service = service_1.default;
+const type_1 = require("./type");
+exports.Type = type_1.default;

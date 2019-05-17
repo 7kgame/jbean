@@ -7,6 +7,7 @@ export interface BeanMeta {
   clzAnnos?: any[]
   methodAnnos?: {}
   fieldAnnos?: {}
+  fieldType?: {}
 }
 
 export const CTOR_ID: string

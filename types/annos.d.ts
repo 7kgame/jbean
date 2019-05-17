@@ -11,3 +11,4 @@ export function getApplicationConfigs (): object
 
 export function Repository (name?: Function | string)
 export function Service (name?: Function | string)
+export function Type(type: string)

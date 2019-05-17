@@ -1,4 +1,5 @@
 import { AnnotationType } from './annos/helper'
+import { Type } from './annos'
 
 export type BeanMeta = {
   file?: string
@@ -7,6 +8,7 @@ export type BeanMeta = {
   clzAnnos?: any[]
   methodAnnos?: {}
   fieldAnnos?: {}
+  fieldType?: {}
 }
 
 export const CTOR_ID: string = '__ctorId'
@@ -31,7 +33,8 @@ export default class BeanFactory {
     target: object | Function,
     prop: string,
     anno: Function,
-    params?: any[]): void {
+    params?: any[],
+    fieldType?: string): void {
 
     let ctor: Function
     if (typeof target === 'object') {
@@ -50,6 +53,7 @@ export default class BeanFactory {
       beanMeta.clzAnnos = []
       beanMeta.methodAnnos = {}
       beanMeta.fieldAnnos = {}
+      beanMeta.fieldType = {}
       BeanFactory.beansMeta[ctorId] = beanMeta
     }
     const beanMeta: BeanMeta = BeanFactory.beansMeta[ctorId]
@@ -64,10 +68,14 @@ export default class BeanFactory {
         beanMeta.methodAnnos[prop].push([anno, params])
         break
       case AnnotationType.field:
-        if (typeof beanMeta.fieldAnnos[prop] === 'undefined') {
-          beanMeta.fieldAnnos[prop] = []
+        if (fieldType) {
+          beanMeta.fieldType[prop] = fieldType
+        } else {
+          if (typeof beanMeta.fieldAnnos[prop] === 'undefined') {
+            beanMeta.fieldAnnos[prop] = []
+          }
+          beanMeta.fieldAnnos[prop].push([anno, params])
         }
-        beanMeta.fieldAnnos[prop].push([anno, params])
         break
       default:
     }

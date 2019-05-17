@@ -182,7 +182,7 @@ class ReflectHelper {
                         catch (e) {
                             if (e instanceof business_exception_1.default) {
                                 ret = {
-                                    err: e.err,
+                                    err: e,
                                     data: e.data,
                                     from: callername,
                                     pre: pre
@@ -248,7 +248,7 @@ class ReflectHelper {
                     catch (e) {
                         if (e instanceof business_exception_1.default) {
                             ret = {
-                                err: e.err,
+                                err: e,
                                 data: e.data,
                                 from: callername,
                                 pre: pre

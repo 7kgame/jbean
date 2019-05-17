@@ -5,6 +5,7 @@ import ComponentScan, { registerScanner } from './component_scan'
 import JBootApplication, { getApplicationConfigs, registerConfigParser } from './jboot-application'
 import Repository from './repository'
 import Service from './service'
+import Type from './type'
 
 export {
   Autowired,
@@ -17,5 +18,6 @@ export {
   registerConfigParser,
   registerScanner,
   Repository,
-  Service
+  Service,
+  Type
 }
