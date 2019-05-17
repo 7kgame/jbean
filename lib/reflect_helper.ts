@@ -151,7 +151,7 @@ export default class ReflectHelper {
             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
               && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
               && !isOriginFunc
-            let ctx = isAnnotation?{}:this
+            let ctx = isAnnotation ? {} : this
             if (isAsyncFunc) {
               ret = await caller.call(ctx, ...args)
             } else {
