@@ -8,7 +8,7 @@ const callback = function (annoType, target, field, name) {
     name = name || field;
     autowiredTargets.push([target, field, name.toLowerCase()]);
 };
-function Autowired(component, name) {
+function Autowired(name, options) {
     return helper_1.annotationHelper(arguments, callback);
 }
 exports.default = Autowired;

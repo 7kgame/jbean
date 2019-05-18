@@ -48,8 +48,12 @@ export function checkAnnotationType (args) {
   return AnnotationType.none
 }
 
-export function annotationHelper (args, callback: Function, ignoreAnnotationTypeInference?: boolean) {
-  let annoType = checkAnnotationType(args)
+export function annotationHelper (args, callback: Function, ignoreAnnotationTypeCheck?: boolean) {
+  let annoType = AnnotationType.none
+  if (!ignoreAnnotationTypeCheck) {
+    annoType = checkAnnotationType(args)
+  }
+
   if (getObjectType(args) === 'arguments') {
     args = Array.prototype.slice.call(args, 0)
   }

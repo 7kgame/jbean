@@ -15,4 +15,4 @@ export enum AnnotationType {
   none
 }
 
-export function annotationHelper (args, callback: Function, ignoreAnnotationTypeInference?: boolean): any
+export function annotationHelper (args, callback: Function, ignoreAnnotationTypeCheck?: boolean): any

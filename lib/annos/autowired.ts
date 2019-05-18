@@ -9,7 +9,7 @@ const callback = function (annoType: AnnotationType, target: Function | object, 
   autowiredTargets.push([target, field, name.toLowerCase()])
 }
 
-export default function Autowired (component?: any, name?: any) {
+export default function Autowired (name?: Function | string | any, options?: any) {
   return annotationHelper(arguments, callback)
 }
 

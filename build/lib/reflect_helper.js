@@ -149,6 +149,7 @@ class ReflectHelper {
                             currentCallIdx++;
                             continue;
                         }
+                        console.log(callername, pre, '=========');
                         try {
                             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
                                 && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
@@ -195,10 +196,12 @@ class ReflectHelper {
                         preRet = ret;
                         currentCallIdx++;
                     }
-                    if (preRet.err)
-                        throw new Error(preRet.err);
-                    else
-                        return preRet;
+                    if (preRet.err) {
+                        throw new Error(JSON.stringify(preRet));
+                    }
+                    else {
+                        return preRet.data;
+                    }
                 });
             };
         }
@@ -262,10 +265,10 @@ class ReflectHelper {
                     currentCallIdx++;
                 }
                 if (preRet.err) {
-                    throw new Error(preRet.err);
+                    throw new Error(JSON.stringify(preRet));
                 }
                 else {
-                    return preRet;
+                    return preRet.data;
                 }
             };
         }
