@@ -12,14 +12,18 @@ let compileTrick: any
 let clzCnt: number = 0
 
 const addCtorId = function (target: object | Function) {
-  let ctor: Function
+  let ctor: any = target
   if (typeof target === 'object') {
     ctor = target.constructor
-  } else {
-    ctor = target
   }
-  if (ctor && typeof ctor[CTOR_ID] === 'undefined') {
-    ctor[CTOR_ID] = ctor.name + ':' + (++clzCnt)
+  if (ctor && !ctor.hasOwnProperty(CTOR_ID)) {// typeof ctor[CTOR_ID] === 'undefined') {
+    // ctor[CTOR_ID] = ctor.name + ':' + (++clzCnt)
+    Object.defineProperties(ctor, {
+      [CTOR_ID]: {
+        enumerable: false,
+        value: ctor.name + ':' + (++clzCnt)
+      }
+    })
   }
 }
 
