@@ -86,3 +86,15 @@ export function rtrimUndefinedArgument (args): any[] {
   }
   return args
 }
+
+export function strTo (type: string, val: string): number | boolean | string {
+  if (type === 'number') {
+    if (val === '' || val === null || val === undefined || val === 'NaN') {
+      return undefined
+    }
+    return +val
+  } else if (type === 'boolean' && typeof val === 'string') {
+    return val === 'true' || val === 'TRUE' || val === '1'
+  }
+  return val
+}

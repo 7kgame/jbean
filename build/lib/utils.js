@@ -90,3 +90,16 @@ function rtrimUndefinedArgument(args) {
     return args;
 }
 exports.rtrimUndefinedArgument = rtrimUndefinedArgument;
+function strTo(type, val) {
+    if (type === 'number') {
+        if (val === '' || val === null || val === undefined || val === 'NaN') {
+            return undefined;
+        }
+        return +val;
+    }
+    else if (type === 'boolean' && typeof val === 'string') {
+        return val === 'true' || val === 'TRUE' || val === '1';
+    }
+    return val;
+}
+exports.strTo = strTo;

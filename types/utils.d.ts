@@ -8,6 +8,8 @@ export function getObjectType(target: any): string
 
 export function isAsyncFunction (func: Function): boolean
 
+export function strTo (type: string, val: string): number | boolean | string
+
 export enum AnnotationType {
   clz,
   method,
