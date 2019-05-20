@@ -149,7 +149,6 @@ class ReflectHelper {
                             currentCallIdx++;
                             continue;
                         }
-                        console.log(callername, pre, '=========');
                         try {
                             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
                                 && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
