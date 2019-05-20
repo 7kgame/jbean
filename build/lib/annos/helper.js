@@ -12,15 +12,18 @@ var AnnotationType;
 let compileTrick;
 let clzCnt = 0;
 const addCtorId = function (target) {
-    let ctor;
+    let ctor = target;
     if (typeof target === 'object') {
         ctor = target.constructor;
     }
-    else {
-        ctor = target;
-    }
-    if (ctor && typeof ctor[bean_factory_1.CTOR_ID] === 'undefined') {
-        ctor[bean_factory_1.CTOR_ID] = ctor.name + ':' + (++clzCnt);
+    if (ctor && !ctor.hasOwnProperty(bean_factory_1.CTOR_ID)) { // typeof ctor[CTOR_ID] === 'undefined') {
+        // ctor[CTOR_ID] = ctor.name + ':' + (++clzCnt)
+        Object.defineProperties(ctor, {
+            [bean_factory_1.CTOR_ID]: {
+                enumerable: false,
+                value: ctor.name + ':' + (++clzCnt)
+            }
+        });
     }
 };
 function checkAnnotationType(args) {
