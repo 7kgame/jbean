@@ -59,7 +59,7 @@ class ReflectHelper {
             loop++;
         }
     }
-    static resetMethod(ctor, method, classAnnos, methodsAnnos) {
+    static resetMethod(ctor, method, classAnnos, methodsAnnos, retHooks) {
         classAnnos = classAnnos || [];
         methodsAnnos = methodsAnnos || [];
         let annos = [];
@@ -147,9 +147,12 @@ class ReflectHelper {
                         let ret = undefined;
                         if (preRet && preRet.err && isOriginFunc) { // skip original function when error occurs
                             currentCallIdx++;
+                            // TODO judge by err types, cancal err if it is caused by Cache Type
+                            if (preRet.err === '__cache_hitted') {
+                                preRet.err = null;
+                            }
                             continue;
                         }
-                        console.log(callername, pre, '=========');
                         try {
                             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
                                 && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
@@ -200,6 +203,10 @@ class ReflectHelper {
                         throw new Error(JSON.stringify(preRet));
                     }
                     else {
+                        retHooks.forEach(([fn, params]) => {
+                            params = [preRet].concat(params);
+                            fn.apply({}, params);
+                        });
                         return preRet.data;
                     }
                 });
@@ -218,9 +225,13 @@ class ReflectHelper {
                 };
                 while (currentCallIdx < callerStackLen) {
                     const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
-                    let ret;
+                    let ret = undefined;
                     if (preRet && preRet.err && isOriginFunc) {
                         currentCallIdx++;
+                        // TODO judge by err types, cancal err if it is caused by Cache Type
+                        if (preRet.err === '__cache_hitted') {
+                            preRet.err = null;
+                        }
                         continue;
                     }
                     try {
@@ -268,6 +279,10 @@ class ReflectHelper {
                     throw new Error(JSON.stringify(preRet));
                 }
                 else {
+                    retHooks.forEach(([fn, params]) => {
+                        params = [preRet].concat(params);
+                        fn.apply({}, params);
+                    });
                     return preRet.data;
                 }
             };
@@ -279,7 +294,7 @@ class ReflectHelper {
             return;
         }
         ReflectHelper.getMethods(ctor).forEach((method) => {
-            ReflectHelper.resetMethod(ctor, method, beanMeta.clzAnnos, beanMeta.methodAnnos[method]);
+            ReflectHelper.resetMethod(ctor, method, beanMeta.clzAnnos, beanMeta.methodAnnos[method], beanMeta.retHooks[method]);
         });
     }
 }

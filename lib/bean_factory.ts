@@ -8,6 +8,7 @@ export type BeanMeta = {
   methodAnnos?: {}
   fieldAnnos?: {}
   fieldType?: {}
+  retHooks?: {}
 }
 
 export const CTOR_ID: string = '__ctorId'
@@ -33,7 +34,8 @@ export default class BeanFactory {
     prop: string,
     anno: Function,
     params?: any[],
-    fieldType?: string): void {
+    fieldType?: string,
+    retHook?: Function): void {
 
     let ctor: Function
     if (typeof target === 'object') {
@@ -53,6 +55,7 @@ export default class BeanFactory {
       beanMeta.methodAnnos = {}
       beanMeta.fieldAnnos = {}
       beanMeta.fieldType = {}
+      beanMeta.retHooks = {}
       BeanFactory.beansMeta[ctorId] = beanMeta
     }
     const beanMeta: BeanMeta = BeanFactory.beansMeta[ctorId]
@@ -65,6 +68,12 @@ export default class BeanFactory {
           beanMeta.methodAnnos[prop] = []
         }
         beanMeta.methodAnnos[prop].push([anno, params])
+        if (typeof beanMeta.retHooks[prop] === 'undefined') {
+          beanMeta.retHooks[prop] = []
+        }
+        if (retHook) {
+          beanMeta.retHooks[prop].push([retHook, params])
+        }
         break
       case AnnotationType.field:
         if (fieldType) {

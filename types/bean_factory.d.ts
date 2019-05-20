@@ -21,7 +21,9 @@ export class BeanFactory {
     target: object | Function,
     prop: string,
     anno: Function,
-    params?: any[]): void
+    params?: any[],
+    fieldType?:string,
+    retHook?: Function): void
   
   public static getBeanMeta (ctor: Function): BeanMeta
 
