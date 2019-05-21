@@ -147,10 +147,6 @@ class ReflectHelper {
                         let ret = undefined;
                         if (preRet && preRet.err && isOriginFunc) { // skip original function when error occurs
                             currentCallIdx++;
-                            // TODO judge by err types, cancal err if it is caused by Cache Type
-                            if (preRet.err === '__cache_hitted') {
-                                preRet.err = null;
-                            }
                             continue;
                         }
                         try {
@@ -165,6 +161,7 @@ class ReflectHelper {
                                 ret = caller.call(ctx, ...args);
                             }
                             if (ret === null) {
+                                preRet = null;
                                 break;
                             }
                             if (ret && ret.err) {
@@ -199,12 +196,15 @@ class ReflectHelper {
                         preRet = ret;
                         currentCallIdx++;
                     }
-                    if (preRet.err) {
+                    if (preRet === null) {
+                        return null;
+                    }
+                    else if (preRet.err) {
                         throw new Error(JSON.stringify(preRet));
                     }
                     else {
                         retHooks.forEach(([fn, params]) => {
-                            params = [preRet].concat(params);
+                            params = [preRet, ...params, ...args0];
                             fn.apply({}, params);
                         });
                         return preRet.data;
@@ -228,10 +228,6 @@ class ReflectHelper {
                     let ret = undefined;
                     if (preRet && preRet.err && isOriginFunc) {
                         currentCallIdx++;
-                        // TODO judge by err types, cancal err if it is caused by Cache Type
-                        if (preRet.err === '__cache_hitted') {
-                            preRet.err = null;
-                        }
                         continue;
                     }
                     try {
@@ -241,6 +237,7 @@ class ReflectHelper {
                         let ctx = isAnnotation ? {} : this;
                         ret = caller.call(ctx, ...args);
                         if (ret === null) {
+                            preRet = null;
                             break;
                         }
                         if (ret && ret.err) {
@@ -275,12 +272,15 @@ class ReflectHelper {
                     preRet = ret;
                     currentCallIdx++;
                 }
-                if (preRet.err) {
+                if (preRet === null) {
+                    return null;
+                }
+                else if (preRet.err) {
                     throw new Error(JSON.stringify(preRet));
                 }
                 else {
                     retHooks.forEach(([fn, params]) => {
-                        params = [preRet].concat(params);
+                        params = [preRet, ...params, ...args0];
                         fn.apply({}, params);
                     });
                     return preRet.data;
