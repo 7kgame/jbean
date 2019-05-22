@@ -113,6 +113,9 @@ export default class ReflectHelper {
       callerStack.push([false, isAsyncFunction(ctor.prototype[AFTER_CALL_NAME]), ctor.prototype[AFTER_CALL_NAME], null, AFTER_CALL_NAME, false])
       hasAsyncFunc = hasAsyncFunc || isAsyncFunction(ctor.prototype[AFTER_CALL_NAME])
     }
+    if (callerStack.length < 1) {
+      return
+    }
 
     const prepareCallerParams = function (callerInfo, args0, ret) {
       const [isOriginFunc, isAsyncFunc, caller, args1, callername, pre] = callerInfo
@@ -151,7 +154,7 @@ export default class ReflectHelper {
             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
               && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
               && !isOriginFunc
-            let ctx = isAnnotation ? {} : this
+            let ctx = isAnnotation ? null : this
             if (isAsyncFunc) {
               ret = await caller.call(ctx, ...args)
             } else {
@@ -196,10 +199,13 @@ export default class ReflectHelper {
         } else if (preRet.err) {
           throw new Error(JSON.stringify(preRet))
         } else {
-          retHooks.forEach(([fn, params]) => {
-            params = [preRet, ...params, ...args0]
-            fn.apply({}, params)
-          })
+          if (retHooks) {     
+            let hooksLen = retHooks.length
+            for (let k = 0; k < hooksLen; k++) {
+              let [fn, params] = retHooks[k]
+              fn.call(null, preRet, ...params, ...args0)
+            }
+          }
           return preRet.data
         }
       }
@@ -225,7 +231,7 @@ export default class ReflectHelper {
             let isAnnotation = !(callername === PRE_AROUND_NAME) && !(callername === POST_AROUND_NAME)
               && !(callername === BEFORE_CALL_NAME) && !(callername === AFTER_CALL_NAME)
               && !isOriginFunc
-            let ctx = isAnnotation?{}:this
+            let ctx = isAnnotation ? null : this
             ret = caller.call(ctx, ...args)
             if (ret === null) {
               preRet = null
@@ -266,10 +272,13 @@ export default class ReflectHelper {
         } else if (preRet.err) {
           throw new Error(JSON.stringify(preRet))
         } else {
-          retHooks.forEach(([fn, params]) => {
-            params = [preRet, ...params, ...args0]
-            fn.apply({}, params)
-          })
+          if (retHooks) {     
+            let hooksLen = retHooks.length
+            for (let k = 0; k < hooksLen; k++) {
+              let [fn, params] = retHooks[k]
+              fn.call(null, preRet, ...params, ...args0)
+            }
+          }
           return preRet.data
         }
       }

@@ -61,9 +61,14 @@ export default class BeanFactory {
     const beanMeta: BeanMeta = BeanFactory.beansMeta[ctorId]
     switch (annoType) {
       case AnnotationType.clz:
-        beanMeta.clzAnnos.push([anno, params])
+        if (anno) {
+          beanMeta.clzAnnos.push([anno, params])
+        }
         break
       case AnnotationType.method:
+        if (!prop) {
+          break
+        }
         if (typeof beanMeta.methodAnnos[prop] === 'undefined') {
           beanMeta.methodAnnos[prop] = []
         }
@@ -76,6 +81,9 @@ export default class BeanFactory {
         }
         break
       case AnnotationType.field:
+        if (!prop) {
+          break
+        }
         if (fieldType) {
           beanMeta.fieldType[prop] = fieldType
         } else {
@@ -126,11 +134,8 @@ export default class BeanFactory {
       return null
     }
     if (!target.ins) {
-      const clz: any = target.target;
-      target.ins = new clz();
-      if (typeof target.ins['postInit'] === 'function') {
-        target.ins['postInit']()
-      }
+      const clz: any = target.target
+      target.ins = new clz()
     }
     return target.ins
   }

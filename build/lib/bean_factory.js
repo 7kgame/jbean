@@ -35,9 +35,14 @@ class BeanFactory {
         const beanMeta = BeanFactory.beansMeta[ctorId];
         switch (annoType) {
             case helper_1.AnnotationType.clz:
-                beanMeta.clzAnnos.push([anno, params]);
+                if (anno) {
+                    beanMeta.clzAnnos.push([anno, params]);
+                }
                 break;
             case helper_1.AnnotationType.method:
+                if (!prop) {
+                    break;
+                }
                 if (typeof beanMeta.methodAnnos[prop] === 'undefined') {
                     beanMeta.methodAnnos[prop] = [];
                 }
@@ -50,6 +55,9 @@ class BeanFactory {
                 }
                 break;
             case helper_1.AnnotationType.field:
+                if (!prop) {
+                    break;
+                }
                 if (fieldType) {
                     beanMeta.fieldType[prop] = fieldType;
                 }
@@ -101,9 +109,6 @@ class BeanFactory {
         if (!target.ins) {
             const clz = target.target;
             target.ins = new clz();
-            if (typeof target.ins['postInit'] === 'function') {
-                target.ins['postInit']();
-            }
         }
         return target.ins;
     }
