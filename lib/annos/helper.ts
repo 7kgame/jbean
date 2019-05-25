@@ -16,8 +16,7 @@ const addCtorId = function (target: object | Function) {
   if (typeof target === 'object') {
     ctor = target.constructor
   }
-  if (ctor && !ctor.hasOwnProperty(CTOR_ID)) {// typeof ctor[CTOR_ID] === 'undefined') {
-    // ctor[CTOR_ID] = ctor.name + ':' + (++clzCnt)
+  if (ctor && !ctor.hasOwnProperty(CTOR_ID)) {
     Object.defineProperties(ctor, {
       [CTOR_ID]: {
         enumerable: false,

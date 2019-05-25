@@ -1,6 +1,13 @@
 export function Bean (component?: Function | string)
 
+export function Entity (name?: Function | string | TableNameSeperatorType)
+
+export enum TableNameSeperatorType {
+  underline
+}
+
 export function Autowired (name?: Function | string | any, options?: any)
+export function Id (name?: any, options?: any)
 
 export function ComponentScan (options?: string | object | Function, ext?: string)
 export function registerScanner (scanner: Function): void

@@ -9,7 +9,7 @@ class BeanFactory {
     static getCurrentSourceFile() {
         return BeanFactory.currentSourceFile;
     }
-    static addBeanMeta(annoType, target, prop, anno, params, fieldType, retHook) {
+    static addBeanMeta(annoType, target, prop, anno, params, fieldType, retHook, id) {
         let ctor;
         if (typeof target === 'object') {
             ctor = target.constructor;
@@ -30,6 +30,7 @@ class BeanFactory {
             beanMeta.fieldAnnos = {};
             beanMeta.fieldType = {};
             beanMeta.retHooks = {};
+            beanMeta.id = null;
             BeanFactory.beansMeta[ctorId] = beanMeta;
         }
         const beanMeta = BeanFactory.beansMeta[ctorId];
@@ -57,6 +58,9 @@ class BeanFactory {
             case helper_1.AnnotationType.field:
                 if (!prop) {
                     break;
+                }
+                if (id) {
+                    beanMeta.id = id;
                 }
                 if (fieldType) {
                     beanMeta.fieldType[prop] = fieldType;

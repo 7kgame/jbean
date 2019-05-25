@@ -7,7 +7,9 @@ export interface BeanMeta {
   clzAnnos?: any[]
   methodAnnos?: {}
   fieldAnnos?: {}
-  fieldType?: {}
+  fieldType?: {},
+  id?: any,
+  retHooks?: {}
 }
 
 export const CTOR_ID: string
@@ -23,7 +25,8 @@ export class BeanFactory {
     anno: Function,
     params?: any[],
     fieldType?:string,
-    retHook?: Function): void
+    retHook?: Function,
+    id?: any): void
   
   public static getBeanMeta (ctor: Function): BeanMeta
 
