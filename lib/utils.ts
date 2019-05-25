@@ -8,9 +8,9 @@ export function merge (target, source) {
   if (!source  || typeof source !== 'object') {
     return target
   }
-  if (Array.isArray(source)) {
-    if (Array.isArray(target)) {
-      for (let i=0; i<source.length; i++) {
+  if (getObjectType(source) === 'array') {
+    if (getObjectType(target) === 'array') {
+      for (let i = 0; i < source.length; i++) {
         target.push(source[i]);
       }
     }
