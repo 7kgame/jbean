@@ -37,9 +37,7 @@ export const scan = function (annoType: AnnotationType, ctor: Function, options?
         return true
       })
       if (isFile && !isExclude && fpath.endsWith(ext)) {
-        BeanFactory.setCurrentSourceFile(fpath)
         require(fpath)
-        BeanFactory.setCurrentSourceFile(null)
       }
       ouertScanner.forEach(scanner => {
         scanner(fpath, isExclude, isFile)

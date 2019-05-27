@@ -10,7 +10,6 @@ export enum TableNameSeperatorType {
 }
 
 const callback = function (annoType: AnnotationType, ctor: Function, name?: string | TableNameSeperatorType) {
-  // TODO
   ctor.prototype.toObject = function () {
     const fields = Object.getOwnPropertyNames(this)
     const obj = {}
@@ -20,6 +19,24 @@ const callback = function (annoType: AnnotationType, ctor: Function, name?: stri
       }
     })
     return obj
+  }
+
+  ctor['getPrimaryVal'] = function (data: object, returnKV?: boolean, defaultVal?: any) {
+    const meta: BeanMeta = BeanFactory.getBeanMeta(ctor)
+    if (!meta || !meta.id) {
+      throw new Error('primary key is not exist in ' + ctor.name)
+    }
+    let val = data ? data[meta.id] : undefined
+    if (val === undefined) {
+      val = defaultVal
+    }
+    if (returnKV) {
+      return {
+        [meta.id]: val
+      }
+    } else {
+      return val
+    }
   }
 
   ctor['clone'] = function (data: object) {

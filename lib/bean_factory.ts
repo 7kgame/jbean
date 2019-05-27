@@ -1,7 +1,7 @@
 import { AnnotationType } from './annos/helper'
+import { getObjectType } from './utils'
 
 export type BeanMeta = {
-  file?: string
   clz?: Function
   ins?: object
   clzAnnos?: any[]
@@ -18,16 +18,6 @@ export default class BeanFactory {
 
   private static beans = {}
   private static beansMeta = {}
-
-  private static currentSourceFile: string
-
-  public static setCurrentSourceFile (sf: string): void {
-    BeanFactory.currentSourceFile = sf
-  }
-
-  public static getCurrentSourceFile (): string {
-    return BeanFactory.currentSourceFile
-  }
 
   public static addBeanMeta (
     annoType: AnnotationType,
@@ -51,7 +41,6 @@ export default class BeanFactory {
     }
     if (typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
       let beanMeta:BeanMeta = {}
-      beanMeta.file = BeanFactory.currentSourceFile
       beanMeta.clz = ctor
       beanMeta.clzAnnos = []
       beanMeta.methodAnnos = {}
@@ -112,7 +101,7 @@ export default class BeanFactory {
     }
   }
 
-  public static addBean (key: string, target: Function | object): void {
+  public static addBean (key: string, target: Function | object, multi?: boolean): void {
     if (!key) {
       return
     }
@@ -122,28 +111,72 @@ export default class BeanFactory {
       ins = target
       target = target.constructor
     }
-    if (BeanFactory.beans[key]) {
+    if (!multi && BeanFactory.beans[key]) {
       throw new Error('Bean name "' + key + '" for '+ target['name'] + ' conflicts with ' + BeanFactory.beans[key].target.name)
     }
-    BeanFactory.beans[key] = {
+    if (multi && !BeanFactory.beans[key]) {
+      BeanFactory.beans[key] = []
+    }
+    const bean = {
       target: target,
       ins: ins
     }
+    if (!multi) {
+      BeanFactory.beans[key] = bean
+    } else {
+      BeanFactory.beans[key].push(bean)
+    }
   }
 
-  public static getBean (key: string) {
+  public static getBean (key: string, filter?: Function) {
     if (!key) {
       return null
     }
-    const target = BeanFactory.beans[key]
-    if (!target || !target.target) {
+    let target = BeanFactory.beans[key]
+    if (!target) {
       return null
     }
-    if (!target.ins) {
-      const clz: any = target.target
-      target.ins = new clz()
+    target = [].concat(target)
+    const beanLen = target.length
+    let matchedTarget = null
+    const matchedTargets = []
+    for (let i = 0; i < beanLen; i++) {
+      if (!filter || (filter(target[i]))) {
+        matchedTargets.push(target[i])
+      }
     }
-    return target.ins
+    const matchedLen = matchedTargets.length
+    if (matchedLen < 1) {
+      return null
+    } else if (matchedLen === 1) {
+      matchedTarget = matchedTargets[0]
+    } else {
+      matchedTarget = matchedTargets[Math.floor((Math.random() * matchedLen)) % matchedLen]
+    }
+    if (!matchedTarget.ins) {
+      const clz: any = matchedTarget.target
+      matchedTarget.ins = new clz()
+    }
+    return matchedTarget.ins
+  }
+
+  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string) {
+    packagePrefix = packagePrefix || ''
+    const packageParts = packageName.split('.')
+    let packagePartsSize = packageParts.length
+    let beanName = packagePrefix + packageName
+    let bean = null
+    for (let i = 0; i < packagePartsSize; i++) {
+      bean = BeanFactory.getBean(beanName, filter)
+      if (bean) {
+        break
+      }
+      beanName = packagePrefix + packageParts.slice(0, packagePartsSize - 1 - i).join('.')
+      if (!beanName) {
+        break
+      }
+    }
+    return bean
   }
 
   private static initBeanCallbacks: Function[] = []

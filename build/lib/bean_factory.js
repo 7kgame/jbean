@@ -3,12 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const helper_1 = require("./annos/helper");
 exports.CTOR_ID = '__ctorId';
 class BeanFactory {
-    static setCurrentSourceFile(sf) {
-        BeanFactory.currentSourceFile = sf;
-    }
-    static getCurrentSourceFile() {
-        return BeanFactory.currentSourceFile;
-    }
     static addBeanMeta(annoType, target, prop, anno, params, fieldType, retHook, id) {
         let ctor;
         if (typeof target === 'object') {
@@ -23,7 +17,6 @@ class BeanFactory {
         }
         if (typeof BeanFactory.beansMeta[ctorId] === 'undefined') {
             let beanMeta = {};
-            beanMeta.file = BeanFactory.currentSourceFile;
             beanMeta.clz = ctor;
             beanMeta.clzAnnos = [];
             beanMeta.methodAnnos = {};
@@ -84,7 +77,7 @@ class BeanFactory {
             return BeanFactory.beansMeta[ctorId];
         }
     }
-    static addBean(key, target) {
+    static addBean(key, target, multi) {
         if (!key) {
             return;
         }
@@ -94,27 +87,73 @@ class BeanFactory {
             ins = target;
             target = target.constructor;
         }
-        if (BeanFactory.beans[key]) {
+        if (!multi && BeanFactory.beans[key]) {
             throw new Error('Bean name "' + key + '" for ' + target['name'] + ' conflicts with ' + BeanFactory.beans[key].target.name);
         }
-        BeanFactory.beans[key] = {
+        if (multi && !BeanFactory.beans[key]) {
+            BeanFactory.beans[key] = [];
+        }
+        const bean = {
             target: target,
             ins: ins
         };
+        if (!multi) {
+            BeanFactory.beans[key] = bean;
+        }
+        else {
+            BeanFactory.beans[key].push(bean);
+        }
     }
-    static getBean(key) {
+    static getBean(key, filter) {
         if (!key) {
             return null;
         }
-        const target = BeanFactory.beans[key];
-        if (!target || !target.target) {
+        let target = BeanFactory.beans[key];
+        if (!target) {
             return null;
         }
-        if (!target.ins) {
-            const clz = target.target;
-            target.ins = new clz();
+        target = [].concat(target);
+        const beanLen = target.length;
+        let matchedTarget = null;
+        const matchedTargets = [];
+        for (let i = 0; i < beanLen; i++) {
+            if (!filter || (filter(target[i]))) {
+                matchedTargets.push(target[i]);
+            }
         }
-        return target.ins;
+        const matchedLen = matchedTargets.length;
+        if (matchedLen < 1) {
+            return null;
+        }
+        else if (matchedLen === 1) {
+            matchedTarget = matchedTargets[0];
+        }
+        else {
+            matchedTarget = matchedTargets[Math.floor((Math.random() * matchedLen)) % matchedLen];
+        }
+        if (!matchedTarget.ins) {
+            const clz = matchedTarget.target;
+            matchedTarget.ins = new clz();
+        }
+        return matchedTarget.ins;
+    }
+    static getBeanByPackage(packageName, filter, packagePrefix) {
+        packagePrefix = packagePrefix || '';
+        const packageParts = packageName.split('.');
+        let packagePartsSize = packageParts.length;
+        let beanName = packagePrefix + packageName;
+        let bean = null;
+        for (let i = 0; i < packagePartsSize; i++) {
+            bean = BeanFactory.getBean(beanName, filter);
+            if (bean) {
+                break;
+            }
+            beanName = packagePrefix + packageParts.slice(0, packagePartsSize - 1 - i).join('.');
+            if (!beanName) {
+                break;
+            }
+        }
+        return bean;
     }
     static registerInitBean(callback) {
         BeanFactory.initBeanCallbacks.push(callback);

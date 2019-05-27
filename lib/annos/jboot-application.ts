@@ -1,9 +1,37 @@
 import * as FS from 'fs'
 import * as Path from 'path'
-
 import { merge } from '../utils'
 import { scan, registerScanner } from './component_scan'
 import { AnnotationType, annotationHelper } from './helper'
+
+export const CTOR_JWEB_FILE_KEY = '__jweb__file'
+export const CTOR_JWEB_PACKAGE_KEY = '__jweb__package'
+
+const Module = require('module')
+const originRequire = Module.prototype.require
+
+Module.prototype.require = function (request) {
+  const ret = originRequire.apply(this, arguments)
+
+  let ctor = null
+  if (typeof ret === 'function') {
+    ctor = ret
+  } else if (ret.default && typeof ret.default === 'function') {
+    ctor = ret.default
+  }
+
+  if (ctor) {
+    const filename = Module._resolveFilename(request, this)
+    const applicationRoot = Path.dirname(require.main.filename)
+    if (filename.indexOf(applicationRoot) === 0) {
+      ctor[CTOR_JWEB_FILE_KEY] = filename
+      ctor[CTOR_JWEB_PACKAGE_KEY] = Path.dirname(filename.substr(applicationRoot.length))
+                                  .replace(new RegExp(Path.sep, 'g'), '.').substr(1)
+    }
+  }
+
+  return ret
+}
 
 const appConfigs = {}
 

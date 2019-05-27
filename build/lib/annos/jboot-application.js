@@ -5,6 +5,30 @@ const Path = require("path");
 const utils_1 = require("../utils");
 const component_scan_1 = require("./component_scan");
 const helper_1 = require("./helper");
+exports.CTOR_JWEB_FILE_KEY = '__jweb__file';
+exports.CTOR_JWEB_PACKAGE_KEY = '__jweb__package';
+const Module = require('module');
+const originRequire = Module.prototype.require;
+Module.prototype.require = function (request) {
+    const ret = originRequire.apply(this, arguments);
+    let ctor = null;
+    if (typeof ret === 'function') {
+        ctor = ret;
+    }
+    else if (ret.default && typeof ret.default === 'function') {
+        ctor = ret.default;
+    }
+    if (ctor) {
+        const filename = Module._resolveFilename(request, this);
+        const applicationRoot = Path.dirname(require.main.filename);
+        if (filename.indexOf(applicationRoot) === 0) {
+            ctor[exports.CTOR_JWEB_FILE_KEY] = filename;
+            ctor[exports.CTOR_JWEB_PACKAGE_KEY] = Path.dirname(filename.substr(applicationRoot.length))
+                .replace(new RegExp(Path.sep, 'g'), '.').substr(1);
+        }
+    }
+    return ret;
+};
 const appConfigs = {};
 const configParser = {
     json: function (content) {

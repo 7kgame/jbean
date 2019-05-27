@@ -6,6 +6,9 @@ export enum TableNameSeperatorType {
   underline
 }
 
+export const CTOR_JWEB_FILE_KEY = '__jweb__file'
+export const CTOR_JWEB_PACKAGE_KEY = '__jweb__package'
+
 export function Autowired (name?: Function | string | any, options?: any)
 export function Id (name?: any, options?: any)
 

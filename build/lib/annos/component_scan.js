@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Path = require("path");
 const utils_1 = require("../utils");
 const helper_1 = require("./helper");
-const bean_factory_1 = require("../bean_factory");
 const ouertScanner = [];
 exports.registerScanner = function (scanner) {
     ouertScanner.push(scanner);
@@ -35,9 +34,7 @@ exports.scan = function (annoType, ctor, options, ext) {
                 return true;
             });
             if (isFile && !isExclude && fpath.endsWith(ext)) {
-                bean_factory_1.default.setCurrentSourceFile(fpath);
                 require(fpath);
-                bean_factory_1.default.setCurrentSourceFile(null);
             }
             ouertScanner.forEach(scanner => {
                 scanner(fpath, isExclude, isFile);

@@ -1,7 +1,6 @@
 import { AnnotationType } from './utils'
 
 export interface BeanMeta {
-  file?: string
   clz?: Function
   ins?: object
   clzAnnos?: any[]
@@ -15,8 +14,6 @@ export interface BeanMeta {
 export const CTOR_ID: string
 
 export class BeanFactory {
-  public static setCurrentSourceFile (sf: string): void
-  public static getCurrentSourceFile (): string
 
   public static addBeanMeta (
     annoType: AnnotationType,
@@ -30,8 +27,9 @@ export class BeanFactory {
   
   public static getBeanMeta (ctor: Function): BeanMeta
 
-  public static addBean (key: string, target: Function | object): void
-  public static getBean (key: string): object
+  public static addBean (key: string, target: Function | object, multi?: boolean): void
+  public static getBean (key: string, filter?: Function): object
+  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string): object
 
   public static registerInitBean (callback: Function): void
   public static registerStartBean (callback: Function): void

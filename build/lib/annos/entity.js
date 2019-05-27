@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const helper_1 = require("./helper");
+const bean_factory_1 = require("../bean_factory");
 function Entity(name) {
     return helper_1.annotationHelper(arguments, callback);
 }
@@ -10,7 +11,6 @@ var TableNameSeperatorType;
     TableNameSeperatorType[TableNameSeperatorType["underline"] = 0] = "underline";
 })(TableNameSeperatorType = exports.TableNameSeperatorType || (exports.TableNameSeperatorType = {}));
 const callback = function (annoType, ctor, name) {
-    // TODO
     ctor.prototype.toObject = function () {
         const fields = Object.getOwnPropertyNames(this);
         const obj = {};
@@ -20,6 +20,24 @@ const callback = function (annoType, ctor, name) {
             }
         });
         return obj;
+    };
+    ctor['getPrimaryVal'] = function (data, returnKV, defaultVal) {
+        const meta = bean_factory_1.default.getBeanMeta(ctor);
+        if (!meta || !meta.id) {
+            throw new Error('primary key is not exist in ' + ctor.name);
+        }
+        let val = data ? data[meta.id] : undefined;
+        if (val === undefined) {
+            val = defaultVal;
+        }
+        if (returnKV) {
+            return {
+                [meta.id]: val
+            };
+        }
+        else {
+            return val;
+        }
     };
     ctor['clone'] = function (data) {
         if (!data) {

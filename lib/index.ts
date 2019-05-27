@@ -3,6 +3,7 @@ import ReflectHelper from './reflect_helper'
 import BusinessException from './business_exception'
 export * from './annos'
 export * from './utils'
+export * from './types'
 
 export {
   BeanFactory,
