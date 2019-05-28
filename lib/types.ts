@@ -1,1 +1,4 @@
-export type Page = {total: number, list: any[]}
+export interface Page<T> {
+  total: number
+  list: T[]
+}
