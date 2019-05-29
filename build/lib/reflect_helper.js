@@ -203,7 +203,12 @@ class ReflectHelper {
                         return null;
                     }
                     else if (preRet.err) {
-                        throw new Error(JSON.stringify(preRet));
+                        if (preRet.err instanceof business_exception_1.default || preRet.err instanceof Error) {
+                            throw preRet.err;
+                        }
+                        else {
+                            throw new Error(JSON.stringify(preRet));
+                        }
                     }
                     else {
                         if (retHooks) {
@@ -282,7 +287,13 @@ class ReflectHelper {
                     return null;
                 }
                 else if (preRet.err) {
-                    throw new Error(JSON.stringify(preRet));
+                    if (preRet.err instanceof business_exception_1.default || preRet.err instanceof Error) {
+                        throw preRet.err;
+                    }
+                    else {
+                        throw new Error(JSON.stringify(preRet));
+                    }
+                    // throw new Error(JSON.stringify(preRet))
                 }
                 else {
                     if (retHooks) {

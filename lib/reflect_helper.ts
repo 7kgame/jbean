@@ -17,7 +17,7 @@ export default class ReflectHelper {
       }
       if (!checkBeforeAfterCaller &&
         (item === BEFORE_CALL_NAME ||
-          item === AFTER_CALL_NAME || 
+          item === AFTER_CALL_NAME ||
           item === PRE_AROUND_NAME ||
           item === POST_AROUND_NAME)) {
         return false
@@ -197,9 +197,13 @@ export default class ReflectHelper {
         if (preRet === null) {
           return null
         } else if (preRet.err) {
-          throw new Error(JSON.stringify(preRet))
+          if (preRet.err instanceof BusinessException || preRet.err instanceof Error) {
+            throw preRet.err
+          } else {
+            throw new Error(JSON.stringify(preRet))
+          }
         } else {
-          if (retHooks) {     
+          if (retHooks) {
             let hooksLen = retHooks.length
             for (let k = 0; k < hooksLen; k++) {
               let [fn, params] = retHooks[k]
@@ -270,9 +274,14 @@ export default class ReflectHelper {
         if (preRet === null) {
           return null
         } else if (preRet.err) {
-          throw new Error(JSON.stringify(preRet))
+          if (preRet.err instanceof BusinessException || preRet.err instanceof Error) {
+            throw preRet.err
+          } else {
+            throw new Error(JSON.stringify(preRet))
+          }
+          // throw new Error(JSON.stringify(preRet))
         } else {
-          if (retHooks) {     
+          if (retHooks) {
             let hooksLen = retHooks.length
             for (let k = 0; k < hooksLen; k++) {
               let [fn, params] = retHooks[k]
