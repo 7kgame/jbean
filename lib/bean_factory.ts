@@ -203,7 +203,7 @@ export default class BeanFactory {
     return bean
   }
 
-  public static releaseBeans (requestId: number): void {
+  public static async releaseBeans (requestId: number): Promise<void> {
     const rKey = getRequestKey(requestId)
     if (typeof BeanFactory.requestBeans[rKey] === 'undefined') {
       return
@@ -211,12 +211,12 @@ export default class BeanFactory {
     const beanKeys = Object.keys(BeanFactory.requestBeans[rKey][1])
     for (const key of beanKeys) {
       if (typeof BeanFactory.requestBeans[rKey][1][key]['destroy'] === 'function') {
-        BeanFactory.requestBeans[rKey][1][key]['destroy']()
+        await BeanFactory.requestBeans[rKey][1][key]['destroy']()
       }
       BeanFactory.requestBeans[rKey][1][key] = null
     }
     if (typeof BeanFactory.requestBeans[rKey][0]['destroy'] === 'function') {
-      BeanFactory.requestBeans[rKey][0]['destroy']()
+      await BeanFactory.requestBeans[rKey][0]['destroy']()
       BeanFactory.requestBeans[rKey][0] = null
     }
     delete BeanFactory.requestBeans[rKey]

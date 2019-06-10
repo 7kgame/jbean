@@ -36,6 +36,7 @@ export class BeanFactory {
   public static genRequestId (ins: object): void
   public static getRequestId (ins: object): number | null
   public static attachRequestId (ins: object, requestId: number): void
+  public static releaseBeans (requestId: number): void
 
   public static registerInitBean (callback: Function): void
   public static registerStartBean (callback: Function): void
