@@ -8,6 +8,7 @@ import JBootApplication, { CTOR_JWEB_FILE_KEY, CTOR_JWEB_PACKAGE_KEY, getApplica
 import Repository from './repository'
 import Service from './service'
 import Type from './type'
+import Transactional, { TransactionalOptions, getTransactionalMeta, checkSupportTransition, registerBegin, registerCommit, registerRollback, emitBegin, emitCommit, emitRollback } from './transactional'
 
 export {
   Autowired,
@@ -26,5 +27,15 @@ export {
   registerScanner,
   Repository,
   Service,
-  Type
+  Type,
+  Transactional,
+  TransactionalOptions,
+  getTransactionalMeta,
+  checkSupportTransition,
+  registerBegin,
+  registerCommit,
+  registerRollback,
+  emitBegin,
+  emitCommit,
+  emitRollback
 }

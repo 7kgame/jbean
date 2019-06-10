@@ -1,5 +1,4 @@
 import { AnnotationType } from './annos/helper'
-import { getObjectType } from './utils'
 
 export type BeanMeta = {
   clz?: Function
@@ -13,10 +12,17 @@ export type BeanMeta = {
 }
 
 export const CTOR_ID: string = '__ctorId'
+export const REQUEST_ID: string = '$__request_id'
+export const REQUEST_START_TIME: string = '$__request_st'
+
+const getRequestKey = function (requestId: number): string {
+  return 'r_' + requestId
+}
 
 export default class BeanFactory {
 
   private static beans = {}
+  private static requestBeans = {}
   private static beansMeta = {}
 
   public static addBeanMeta (
@@ -112,7 +118,7 @@ export default class BeanFactory {
       target = target.constructor
     }
     if (!multi && BeanFactory.beans[key]) {
-      throw new Error('Bean name "' + key + '" for '+ target['name'] + ' conflicts with ' + BeanFactory.beans[key].target.name)
+      throw new Error('Bean name "' + key + '" for ' + target['name'] + ' conflicts with ' + BeanFactory.beans[key].target.name)
     }
     if (multi && !BeanFactory.beans[key]) {
       BeanFactory.beans[key] = []
@@ -128,10 +134,11 @@ export default class BeanFactory {
     }
   }
 
-  public static getBean (key: string, filter?: Function) {
+  public static getBean (key: string, filter?: Function, requestId?: number) {
     if (!key) {
       return null
     }
+
     let target = BeanFactory.beans[key]
     if (!target) {
       return null
@@ -153,21 +160,38 @@ export default class BeanFactory {
     } else {
       matchedTarget = matchedTargets[Math.floor((Math.random() * matchedLen)) % matchedLen]
     }
-    if (!matchedTarget.ins) {
-      const clz: any = matchedTarget.target
-      matchedTarget.ins = new clz()
+
+    const clz: any = matchedTarget.target
+    if (clz['singleton']) {
+      requestId = 0
     }
-    return matchedTarget.ins
+    if (requestId) {
+      const rKey = getRequestKey(requestId)
+      if (typeof BeanFactory.requestBeans[rKey] === 'undefined') {
+        return null
+      }
+      if (typeof BeanFactory.requestBeans[rKey][1][key] === 'undefined') {
+        const ins = new clz()
+        ins[REQUEST_ID] = requestId
+        BeanFactory.requestBeans[rKey][1][key] = ins
+      }
+      return BeanFactory.requestBeans[rKey][1][key]
+    } else {
+      if (!matchedTarget.ins) {
+        matchedTarget.ins = new clz()
+      }
+      return matchedTarget.ins
+    }
   }
 
-  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string) {
+  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string, requestId?: number) {
     packagePrefix = packagePrefix || ''
     const packageParts = packageName.split('.')
     let packagePartsSize = packageParts.length
     let beanName = packagePrefix + packageName
     let bean = null
     for (let i = 0; i < packagePartsSize; i++) {
-      bean = BeanFactory.getBean(beanName, filter)
+      bean = BeanFactory.getBean(beanName, filter, requestId)
       if (bean) {
         break
       }
@@ -177,6 +201,51 @@ export default class BeanFactory {
       }
     }
     return bean
+  }
+
+  public static releaseBeans (requestId: number): void {
+    const rKey = getRequestKey(requestId)
+    if (typeof BeanFactory.requestBeans[rKey] === 'undefined') {
+      return
+    }
+    const beanKeys = Object.keys(BeanFactory.requestBeans[rKey][1])
+    for (const key of beanKeys) {
+      if (typeof BeanFactory.requestBeans[rKey][1][key]['destroy'] === 'function') {
+        BeanFactory.requestBeans[rKey][1][key]['destroy']()
+      }
+      BeanFactory.requestBeans[rKey][1][key] = null
+    }
+    if (typeof BeanFactory.requestBeans[rKey][0]['destroy'] === 'function') {
+      BeanFactory.requestBeans[rKey][0]['destroy']()
+      BeanFactory.requestBeans[rKey][0] = null
+    }
+    delete BeanFactory.requestBeans[rKey]
+  }
+
+  private static currentRequestNo = 1
+  private static MAX_REQUEST_ID = 1000000000 // 1b
+
+  public static genRequestId (ins: object) {
+    if (BeanFactory.currentRequestNo > BeanFactory.MAX_REQUEST_ID) {
+      BeanFactory.currentRequestNo = 1
+    }
+    ins[REQUEST_ID] = BeanFactory.currentRequestNo
+    ins[REQUEST_START_TIME] = +(new Date())
+    const rKey = getRequestKey(BeanFactory.currentRequestNo)
+    BeanFactory.requestBeans[rKey] = [ins, {}]
+    BeanFactory.currentRequestNo++
+  }
+
+  public static attachRequestId (ins: object, requestId: number) {
+    ins[REQUEST_ID] = requestId
+  }
+
+  public static getRequestId (ins: object): number | null {
+    if (ins && typeof ins[REQUEST_ID] !== 'undefined') {
+      return ins[REQUEST_ID]
+    } else {
+      return null
+    }
   }
 
   private static initBeanCallbacks: Function[] = []
@@ -207,7 +276,6 @@ export default class BeanFactory {
   public static destroyBean (): void {
     // TODO
     Object.values(BeanFactory.beans).forEach((target, ins) => {
-      // console.log(target)
     })
   }
 }

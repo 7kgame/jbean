@@ -1,5 +1,5 @@
 import { CTOR_ID } from '../bean_factory'
-import { getObjectType, rtrimUndefinedArgument } from '../utils';
+import { getObjectType, rtrimUndefinedArgument } from '../utils'
 
 export enum AnnotationType {
   clz,
@@ -27,8 +27,8 @@ const addCtorId = function (target: object | Function) {
 }
 
 export function checkAnnotationType (args) {
-  if (args.length === 1 
-      && typeof args[0] === 'function' 
+  if (args.length === 1
+      && typeof args[0] === 'function'
       && args[0].name.toLowerCase() !== 'object') {
     return AnnotationType.clz
   }

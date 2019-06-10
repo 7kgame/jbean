@@ -15,7 +15,7 @@ export function merge (target, source) {
       }
     }
   } else {
-    for (let key in source) {
+    for (const key of Object.keys(source)) {
       const val = source[key]
       if (typeof target[key] === 'undefined' || typeof val !== 'object') {
         target[key] = val
@@ -34,7 +34,7 @@ export function redefineProperty (target, key, config) {
     enumerable: true,
     configurable: true
   }
-  for (let k in config) {
+  for (const k of Object.keys(config)) {
     config0[k] = config[k]
   }
 

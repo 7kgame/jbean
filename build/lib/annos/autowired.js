@@ -16,7 +16,7 @@ bean_factory_1.default.registerStartBean(() => {
     autowiredTargets.forEach(([target, field, name]) => {
         utils_1.redefineProperty(target, field, {
             get: function () {
-                return bean_factory_1.default.getBean(name);
+                return bean_factory_1.default.getBean(name, null, bean_factory_1.default.getRequestId(this));
             }
         });
     });

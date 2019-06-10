@@ -17,7 +17,7 @@ BeanFactory.registerStartBean(() => {
   autowiredTargets.forEach(([target, field, name]) => {
     redefineProperty(target, field, {
       get: function () {
-        return BeanFactory.getBean(name)
+        return BeanFactory.getBean(name, null, BeanFactory.getRequestId(this))
       }
     })
   })

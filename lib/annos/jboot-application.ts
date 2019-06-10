@@ -4,8 +4,8 @@ import { merge } from '../utils'
 import { scan, registerScanner } from './component_scan'
 import { AnnotationType, annotationHelper } from './helper'
 
-export const CTOR_JWEB_FILE_KEY = '__jweb__file'
-export const CTOR_JWEB_PACKAGE_KEY = '__jweb__package'
+export const CTOR_JWEB_FILE_KEY = '$__jweb__file'
+export const CTOR_JWEB_PACKAGE_KEY = '$__jweb__package'
 
 const Module = require('module')
 const originRequire = Module.prototype.require
@@ -74,7 +74,7 @@ const appCallback = function (annoType: AnnotationType, target: Function, option
   if (typeof target['main'] === 'function') {
     setTimeout(() => {
       target['main'](merge(appConfigs, options))
-    }, 0);
+    }, 0)
   }
 }
 

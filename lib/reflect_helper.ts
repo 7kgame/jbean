@@ -2,6 +2,7 @@ import BusinessException from './business_exception'
 
 import BeanFactory, { BeanMeta } from './bean_factory'
 import { isAsyncFunction } from './utils'
+import { emitRollback } from './annos/transactional'
 
 const BEFORE_CALL_NAME: string = 'beforeCall'
 const AFTER_CALL_NAME: string = 'afterCall'
@@ -143,6 +144,7 @@ export default class ReflectHelper {
           from: '',
           pre: undefined
         }
+        const requestId = BeanFactory.getRequestId(this)
         while (currentCallIdx < callerStackLen) {
           const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet)
           let ret = undefined
@@ -187,6 +189,9 @@ export default class ReflectHelper {
                 from: callername,
                 pre: pre
               }
+              if (requestId) {
+                await emitRollback(requestId)
+              }
             } else {
               throw e
             }
@@ -224,6 +229,7 @@ export default class ReflectHelper {
           from: '',
           pre: undefined
         }
+        const requestId = BeanFactory.getRequestId(this)
         while (currentCallIdx < callerStackLen) {
           const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet)
           let ret = undefined
@@ -263,6 +269,9 @@ export default class ReflectHelper {
                 data: e.data,
                 from: callername,
                 pre: pre
+              }
+              if (requestId) {
+                emitRollback(requestId)
               }
             } else {
               throw e

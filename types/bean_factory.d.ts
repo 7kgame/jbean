@@ -12,6 +12,8 @@ export interface BeanMeta {
 }
 
 export const CTOR_ID: string
+export const REQUEST_ID: string
+export const REQUEST_START_TIME: string
 
 export class BeanFactory {
 
@@ -28,8 +30,12 @@ export class BeanFactory {
   public static getBeanMeta (ctor: Function): BeanMeta
 
   public static addBean (key: string, target: Function | object, multi?: boolean): void
-  public static getBean (key: string, filter?: Function): object
-  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string): object
+  public static getBean (key: string, filter?: Function, requestId?: number): object
+  public static getBeanByPackage (packageName: string, filter?: Function, packagePrefix?: string, requestId?: number): object
+
+  public static genRequestId (ins: object): void
+  public static getRequestId (ins: object): number | null
+  public static attachRequestId (ins: object, requestId: number): void
 
   public static registerInitBean (callback: Function): void
   public static registerStartBean (callback: Function): void

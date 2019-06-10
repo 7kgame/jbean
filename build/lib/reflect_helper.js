@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const business_exception_1 = require("./business_exception");
 const bean_factory_1 = require("./bean_factory");
 const utils_1 = require("./utils");
+const transactional_1 = require("./annos/transactional");
 const BEFORE_CALL_NAME = 'beforeCall';
 const AFTER_CALL_NAME = 'afterCall';
 const PRE_AROUND_NAME = 'preAround';
@@ -145,6 +146,7 @@ class ReflectHelper {
                         from: '',
                         pre: undefined
                     };
+                    const requestId = bean_factory_1.default.getRequestId(this);
                     while (currentCallIdx < callerStackLen) {
                         const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
                         let ret = undefined;
@@ -191,6 +193,9 @@ class ReflectHelper {
                                     from: callername,
                                     pre: pre
                                 };
+                                if (requestId) {
+                                    yield transactional_1.emitRollback(requestId);
+                                }
                             }
                             else {
                                 throw e;
@@ -234,6 +239,7 @@ class ReflectHelper {
                     from: '',
                     pre: undefined
                 };
+                const requestId = bean_factory_1.default.getRequestId(this);
                 while (currentCallIdx < callerStackLen) {
                     const [caller, isAsyncFunc, isOriginFunc, args, callername, pre] = prepareCallerParams(callerStack[currentCallIdx], args0, preRet);
                     let ret = undefined;
@@ -275,6 +281,9 @@ class ReflectHelper {
                                 from: callername,
                                 pre: pre
                             };
+                            if (requestId) {
+                                transactional_1.emitRollback(requestId);
+                            }
                         }
                         else {
                             throw e;
