@@ -1,5 +1,5 @@
 import { AnnotationType, annotationHelper } from './helper'
-import BeanFactory, { BeanMeta } from '../bean_factory' 
+import BeanFactory, { BeanMeta } from '../bean_factory'
 
 export default function Entity (name?: Function | string | TableNameSeperatorType) {
   return annotationHelper(arguments, callback)
