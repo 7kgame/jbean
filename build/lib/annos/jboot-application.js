@@ -24,7 +24,7 @@ Module.prototype.require = function (request) {
         if (filename.indexOf(applicationRoot) === 0) {
             ctor[exports.CTOR_JWEB_FILE_KEY] = filename;
             ctor[exports.CTOR_JWEB_PACKAGE_KEY] = Path.dirname(filename.substr(applicationRoot.length))
-                .replace(new RegExp(Path.sep, 'g'), '.').substr(1);
+                .replace(new RegExp(Path.sep.replace(/\\/g, '\\\\'), 'g'), '.').substr(1);
         }
     }
     return ret;

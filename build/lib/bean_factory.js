@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const helper_1 = require("./annos/helper");
 exports.CTOR_ID = '__ctorId';
@@ -121,10 +129,15 @@ class BeanFactory {
         const beanLen = target.length;
         let matchedTarget = null;
         const matchedTargets = [];
-        for (let i = 0; i < beanLen; i++) {
-            if (!filter || (filter(target[i]))) {
-                matchedTargets.push(target[i]);
+        if (beanLen > 1) {
+            for (let i = 0; i < beanLen; i++) {
+                if (!filter || (filter(target[i]))) {
+                    matchedTargets.push(target[i]);
+                }
             }
+        }
+        else {
+            matchedTargets.push(target[0]);
         }
         const matchedLen = matchedTargets.length;
         if (matchedLen < 1) {
@@ -178,22 +191,24 @@ class BeanFactory {
         return bean;
     }
     static releaseBeans(requestId) {
-        const rKey = getRequestKey(requestId);
-        if (typeof BeanFactory.requestBeans[rKey] === 'undefined') {
-            return;
-        }
-        const beanKeys = Object.keys(BeanFactory.requestBeans[rKey][1]);
-        for (const key of beanKeys) {
-            if (typeof BeanFactory.requestBeans[rKey][1][key]['destroy'] === 'function') {
-                BeanFactory.requestBeans[rKey][1][key]['destroy']();
+        return __awaiter(this, void 0, void 0, function* () {
+            const rKey = getRequestKey(requestId);
+            if (typeof BeanFactory.requestBeans[rKey] === 'undefined') {
+                return;
             }
-            BeanFactory.requestBeans[rKey][1][key] = null;
-        }
-        if (typeof BeanFactory.requestBeans[rKey][0]['destroy'] === 'function') {
-            BeanFactory.requestBeans[rKey][0]['destroy']();
-            BeanFactory.requestBeans[rKey][0] = null;
-        }
-        delete BeanFactory.requestBeans[rKey];
+            const beanKeys = Object.keys(BeanFactory.requestBeans[rKey][1]);
+            for (const key of beanKeys) {
+                if (typeof BeanFactory.requestBeans[rKey][1][key]['destroy'] === 'function') {
+                    yield BeanFactory.requestBeans[rKey][1][key]['destroy']();
+                }
+                BeanFactory.requestBeans[rKey][1][key] = null;
+            }
+            if (typeof BeanFactory.requestBeans[rKey][0]['destroy'] === 'function') {
+                yield BeanFactory.requestBeans[rKey][0]['destroy']();
+                BeanFactory.requestBeans[rKey][0] = null;
+            }
+            delete BeanFactory.requestBeans[rKey];
+        });
     }
     static genRequestId(ins) {
         if (BeanFactory.currentRequestNo > BeanFactory.MAX_REQUEST_ID) {

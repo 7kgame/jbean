@@ -147,11 +147,16 @@ export default class BeanFactory {
     const beanLen = target.length
     let matchedTarget = null
     const matchedTargets = []
-    for (let i = 0; i < beanLen; i++) {
-      if (!filter || (filter(target[i]))) {
-        matchedTargets.push(target[i])
+    if (beanLen > 1) {
+      for (let i = 0; i < beanLen; i++) {
+        if (!filter || (filter(target[i]))) {
+          matchedTargets.push(target[i])
+        }
       }
+    } else {
+      matchedTargets.push(target[0])
     }
+
     const matchedLen = matchedTargets.length
     if (matchedLen < 1) {
       return null
