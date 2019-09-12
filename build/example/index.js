@@ -8,8 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 var App_1;
+Object.defineProperty(exports, "__esModule", { value: true });
 const lib_1 = require("../lib");
 const user_service_1 = require("./user_service");
 const test_1 = require("./test/test");
