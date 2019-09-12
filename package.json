@@ -1,8 +1,8 @@
 {
   "name": "jbean",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "bean factory for jweb",
-  "main": "build/lib/index.js",
+  "main": "build/index.js",
   "typings": "types/index.d.ts",
   "files": [
     "build/**/*.js",
@@ -11,7 +11,6 @@
   "scripts": {
     "build": "tsc",
     "tsc": "tsc",
-    "start": "node build/example/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
