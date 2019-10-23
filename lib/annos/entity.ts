@@ -21,6 +21,21 @@ const callback = function (annoType: AnnotationType, ctor: Function, name?: stri
     return obj
   }
 
+  ctor.prototype.init = function (data: object | string) {
+    if (!data) {
+      return null
+    }
+    if (typeof data === 'string') {
+      data = JSON.parse(data)
+    }
+    const fields = Object.getOwnPropertyNames(this)
+    fields.forEach(field => {
+      if (data[field] !== undefined) {
+        this[field] = data[field]
+      }
+    })
+  }
+
   ctor['getPrimaryVal'] = function (data: object, returnKV?: boolean, defaultVal?: any) {
     const meta: BeanMeta = BeanFactory.getBeanMeta(ctor)
     if (!meta || !meta.id) {

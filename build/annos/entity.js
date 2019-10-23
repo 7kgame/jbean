@@ -21,6 +21,20 @@ const callback = function (annoType, ctor, name) {
         });
         return obj;
     };
+    ctor.prototype.init = function (data) {
+        if (!data) {
+            return null;
+        }
+        if (typeof data === 'string') {
+            data = JSON.parse(data);
+        }
+        const fields = Object.getOwnPropertyNames(this);
+        fields.forEach(field => {
+            if (data[field] !== undefined) {
+                this[field] = data[field];
+            }
+        });
+    };
     ctor['getPrimaryVal'] = function (data, returnKV, defaultVal) {
         const meta = bean_factory_1.default.getBeanMeta(ctor);
         if (!meta || !meta.id) {
